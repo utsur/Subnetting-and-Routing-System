@@ -32,6 +32,7 @@ public final class OutputFormatter {
     /**
      * Converts a network to a mermaid graph.
      * The mermaid graph can be used to visualize the network.
+     *
      * @param network The network to convert.
      * @return The Mermaid-Syntax.
      */
@@ -52,14 +53,16 @@ public final class OutputFormatter {
             Collections.sort(subnetConnections, new ConnectionComparator());
 
             for (Connection conn : subnetConnections) {
-                sb.append(String.format(CONNECTION_FORMAT, conn.getSystem1().getName(), conn.getWeight(), conn.getSystem2().getName())).append(NEW_LINE);
+                sb.append(String.format(CONNECTION_FORMAT, conn.getSystem1().getName(),
+                    conn.getWeight(), conn.getSystem2().getName())).append(NEW_LINE);
             }
             sb.append(SUBGRAPH_END).append(NEW_LINE);
         }
 
         List<Connection> interSubnetConnections = getInterSubnetConnections(network);
         for (Connection conn : interSubnetConnections) {
-            sb.append(String.format(INTER_SUBNET_CONNECTION_FORMAT, conn.getSystem1().getName(), conn.getSystem2().getName())).append(NEW_LINE);
+            sb.append(String.format(INTER_SUBNET_CONNECTION_FORMAT, conn.getSystem1().getName(),
+                conn.getSystem2().getName())).append(NEW_LINE);
         }
 
         return sb.toString().trim(); // Trim to remove the last newline
@@ -85,7 +88,8 @@ public final class OutputFormatter {
         return interSubnetConnections;
     }
 
-    private static class SystemComparator implements Comparator<Systems> {
+
+    private static final class SystemComparator implements Comparator<Systems> {
         @Override
         public int compare(Systems s1, Systems s2) {
             if (s1 instanceof Router && !(s2 instanceof Router)) {
@@ -98,14 +102,19 @@ public final class OutputFormatter {
         }
     }
 
-    private static class ConnectionComparator implements Comparator<Connection> {
+
+    private static final class ConnectionComparator implements Comparator<Connection> {
         @Override
         public int compare(Connection c1, Connection c2) {
             boolean c1HasRouter = c1.getSystem1() instanceof Router || c1.getSystem2() instanceof Router;
             boolean c2HasRouter = c2.getSystem1() instanceof Router || c2.getSystem2() instanceof Router;
 
-            if (c1HasRouter && !c2HasRouter) return -1;
-            if (!c1HasRouter && c2HasRouter) return 1;
+            if (c1HasRouter && !c2HasRouter) {
+                return -1;
+            }
+            if (!c1HasRouter && c2HasRouter) {
+                return 1;
+            }
 
             return c1.getSystem1().getName().compareTo(c2.getSystem1().getName());
         }
