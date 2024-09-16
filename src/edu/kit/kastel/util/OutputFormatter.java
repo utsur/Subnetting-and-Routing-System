@@ -2,13 +2,13 @@ package edu.kit.kastel.util;
 
 import edu.kit.kastel.model.Connection;
 import edu.kit.kastel.model.Network;
-import edu.kit.kastel.model.Router;
 import edu.kit.kastel.model.Subnet;
 import edu.kit.kastel.model.Systems;
+import edu.kit.kastel.util.comparators.ConnectionComparator;
+import edu.kit.kastel.util.comparators.SystemComparator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -21,7 +21,7 @@ public final class OutputFormatter {
     private static final String SUBGRAPH_START = "    subgraph ";
     private static final String SUBGRAPH_END = "    end";
     private static final String SYSTEM_FORMAT = "        %s[%s]";
-    private static final String CONNECTION_FORMAT = "        %s <-->%s%s";
+    private static final String CONNECTION_FORMAT = "        %s <--> |%d| %s";
     private static final String INTER_SUBNET_CONNECTION_FORMAT = "    %s <--> %s";
     private static final String NEW_LINE = "\n";
 
@@ -60,6 +60,7 @@ public final class OutputFormatter {
         }
 
         List<Connection> interSubnetConnections = getInterSubnetConnections(network);
+        sortInterSubnetConnections(interSubnetConnections);
         for (Connection conn : interSubnetConnections) {
             sb.append(String.format(INTER_SUBNET_CONNECTION_FORMAT, conn.getSystem1().getName(),
                 conn.getSystem2().getName())).append(NEW_LINE);
@@ -88,35 +89,11 @@ public final class OutputFormatter {
         return interSubnetConnections;
     }
 
-
-    private static final class SystemComparator implements Comparator<Systems> {
-        @Override
-        public int compare(Systems s1, Systems s2) {
-            if (s1 instanceof Router && !(s2 instanceof Router)) {
-                return -1;
-            }
-            if (!(s1 instanceof Router) && s2 instanceof Router) {
-                return 1;
-            }
-            return s1.getName().compareTo(s2.getName());
-        }
-    }
-
-
-    private static final class ConnectionComparator implements Comparator<Connection> {
-        @Override
-        public int compare(Connection c1, Connection c2) {
-            boolean c1HasRouter = c1.getSystem1() instanceof Router || c1.getSystem2() instanceof Router;
-            boolean c2HasRouter = c2.getSystem1() instanceof Router || c2.getSystem2() instanceof Router;
-
-            if (c1HasRouter && !c2HasRouter) {
-                return -1;
-            }
-            if (!c1HasRouter && c2HasRouter) {
-                return 1;
-            }
-
-            return c1.getSystem1().getName().compareTo(c2.getSystem1().getName());
-        }
+    private static void sortInterSubnetConnections(List<Connection> connections) {
+        Collections.sort(connections, (c1, c2) -> {
+            String name1 = c1.getSystem1().getName();
+            String name2 = c2.getSystem1().getName();
+            return name1.compareTo(name2);
+        });
     }
 }
