@@ -2,8 +2,13 @@ package edu.kit.kastel.util;
 
 import edu.kit.kastel.model.Connection;
 import edu.kit.kastel.model.Network;
+import edu.kit.kastel.model.Router;
 import edu.kit.kastel.model.Subnet;
 import edu.kit.kastel.model.Systems;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * This class provides a method to convert a network to a mermaid graph.
@@ -29,30 +34,40 @@ public final class OutputFormatter {
      * @return The Mermaid-Syntax.
      */
     public static String toMermaid(Network network) {
-        StringBuilder sb = new StringBuilder("graph\n");
+        StringBuilder sb = new StringBuilder(GRAPH_START).append(NEW_LINE);
 
         for (Subnet subnet : network.getSubnets()) {
-            sb.append(SUBGRAPH_START).append(subnet.getCidr()).append("\n");
+            sb.append(SUBGRAPH_START).append(subnet.getCidr()).append(NEW_LINE);
 
-            for (Systems system : subnet.getSystems()) {
-                sb.append("        ").append(system.getName()).append("[").append(system.getIpAddress()).append("]\n");
+            List<Systems> sortedSystems = new ArrayList<>(subnet.getSystems());
+            Collections.sort(sortedSystems, (s1, s2) -> {
+                if (s1 instanceof Router && !(s2 instanceof Router)) {
+                    return -1;
+                }
+                if (!(s1 instanceof Router) && s2 instanceof Router) {
+                    return 1;
+                }
+                return s1.getName().compareTo(s2.getName());
+            });
+
+            for (Systems system : sortedSystems) {
+                sb.append(String.format(SYSTEM_FORMAT, system.getName(), system.getIpAddress())).append(NEW_LINE);
             }
 
             for (Connection conn : network.getConnections()) {
                 if (conn.getSystem1().getSubnet() == subnet && conn.getSystem2().getSubnet() == subnet) {
-                    sb.append("        ").append(conn.getSystem1().getName())
-                        .append(" <-->")
-                        .append(conn.getWeight() != null ? "|" + conn.getWeight() + "|" : "")
-                        .append(conn.getSystem2().getName()).append("\n");
+                    String weightPart = conn.getWeight() != null ? "|" + conn.getWeight() + "|" : "";
+                    sb.append(String.format(CONNECTION_FORMAT, conn.getSystem1().getName(),
+                        weightPart, conn.getSystem2().getName())).append(NEW_LINE);
                 }
             }
-            sb.append("    end\n");
+            sb.append(SUBGRAPH_END).append(NEW_LINE);
         }
 
         for (Connection conn : network.getConnections()) {
             if (conn.getSystem1().getSubnet() != conn.getSystem2().getSubnet()) {
-                sb.append("    ").append(conn.getSystem1().getName())
-                    .append(" <--> ").append(conn.getSystem2().getName()).append("\n");
+                sb.append(String.format(INTER_SUBNET_CONNECTION_FORMAT,
+                    conn.getSystem1().getName(), conn.getSystem2().getName())).append(NEW_LINE);
             }
         }
 
