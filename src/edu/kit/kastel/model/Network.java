@@ -54,6 +54,24 @@ public class Network {
     }
 
     /**
+     * Returns the system with the given IP address.
+     * @param ip The IP address of the system.
+     * @return The system with the given IP address.
+     */
+    public Systems getSystemByIp(String ip) {
+        return systemsByIp.get(ip);
+    }
+
+    /**
+     * Returns the system by its name.
+     * @param name The name of the system.
+     * @return The system with the given name.
+     */
+    public Systems getSystemByName(String name) {
+        return systemsByName.get(name);
+    }
+
+    /**
      * Adds a system to the network.
      * @param system The system to add.
      */
@@ -63,11 +81,49 @@ public class Network {
     }
 
     /**
+     * Removes a system from the network.
+     * @param system The system to remove.
+     */
+    public void removeSystem(Systems system) {
+        systemsByIp.remove(system.getIpAddress());
+        systemsByName.remove(system.getName());
+        connections.removeIf(conn -> conn.getSystem1() == system || conn.getSystem2() == system);
+    }
+
+    /**
      * Adds a connection between two systems.
      * @param connection The connection to add.
      */
     public void addConnection(Connection connection) {
         connections.add(connection);
+    }
+
+    /**
+     * Checks if a connection exists between two systems.
+     * @param system1 The first system.
+     * @param system2 The second system.
+     * @return True if a connection exists between the two systems, false otherwise.
+     */
+    public boolean connectionExists(Systems system1, Systems system2) {
+        for (Connection conn : connections) {
+            if ((conn.getSystem1() == system1 && conn.getSystem2() == system2)
+                || (conn.getSystem1() == system2 && conn.getSystem2() == system1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Removes a connection between two systems.
+     * @param system1 The first system.
+     * @param system2 The second system.
+     */
+    public void removeConnection(Systems system1, Systems system2) {
+        connections.removeIf(conn ->
+            (conn.getSystem1() == system1 && conn.getSystem2() == system2)
+                || (conn.getSystem1() == system2 && conn.getSystem2() == system1)
+        );
     }
 
     /**
@@ -92,15 +148,6 @@ public class Network {
      */
     public Set<Connection> getConnections() {
         return new HashSet<>(connections);
-    }
-
-    /**
-     * Returns the system by its name.
-     * @param name The name of the system.
-     * @return The system with the given name.
-     */
-    public Systems getSystemByName(String name) {
-        return systemsByName.get(name);
     }
 
     /**

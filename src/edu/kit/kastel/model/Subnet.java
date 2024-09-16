@@ -13,6 +13,7 @@ import java.util.Set;
 public class Subnet {
     private static final int BITS_IN_BYTE = 8;
     private static final int BYTES_IN_IP = 4;
+    private static final int IP_PARTS = 4;
     private static final String IP_DELIMITER = "\\.";
     private static final String CIDR_DELIMITER = "/";
     private final String cidr;
@@ -85,6 +86,42 @@ public class Subnet {
         }
 
         return ipInts[0] + "." + ipInts[1] + "." + ipInts[2] + "." + ipInts[3];
+    }
+
+    /**
+     * This method checks if the given IP address is in the subnet.
+     * @param ip The IP address to check.
+     * @return true if the IP address is in the subnet, false otherwise.
+     */
+    public boolean isIpInSubnet(String ip) {
+        String[] cidrParts = cidr.split(CIDR_DELIMITER);
+        String networkAddress = cidrParts[0];
+        int prefixLength = Integer.parseInt(cidrParts[1]);
+
+        long networkIp = ipToLong(networkAddress);
+        long inputIp = ipToLong(ip);
+
+        long mask = 0xffffffffL << (32 - prefixLength);
+
+        return (networkIp & mask) == (inputIp & mask);
+    }
+
+    private long ipToLong(String ip) {
+        String[] octets = ip.split(IP_DELIMITER);
+        long result = 0;
+        for (int i = 0; i < IP_PARTS; i++) {
+            result <<= BITS_IN_BYTE;
+            result |= Long.parseLong(octets[i]);
+        }
+        return result;
+    }
+
+    /**
+     * This method removes a system from the subnet.
+     * @param system The system to remove.
+     */
+    public void removeSystem(Systems system) {
+        systems.remove(system);
     }
 
     /**

@@ -1,5 +1,9 @@
 package edu.kit.kastel.commands;
 
+import edu.kit.kastel.commands.computer.AddComputerCommand;
+import edu.kit.kastel.commands.computer.RemoveComputerCommand;
+import edu.kit.kastel.commands.connection.AddConnectionCommand;
+import edu.kit.kastel.commands.connection.RemoveConnectionCommand;
 import edu.kit.kastel.commands.list.ListRangeCommand;
 import edu.kit.kastel.commands.list.ListSubnetsCommand;
 import edu.kit.kastel.commands.list.ListSystemsCommand;
@@ -27,6 +31,11 @@ public class CommandHandler {
         commands.put("list", new ListSubnetsCommand(network));
         commands.put("list range", new ListRangeCommand(network));
         commands.put("list systems", new ListSystemsCommand(network));
+        commands.put("add connection", new AddConnectionCommand(network));
+        commands.put("remove connection", new RemoveConnectionCommand(network));
+        commands.put("add computer", new AddComputerCommand(network));
+        commands.put("remove computer", new RemoveComputerCommand(network));
+        commands.put("send packet", new SendPacketCommand(network));
         commands.put("quit", new QuitCommand());
     }
 
@@ -36,17 +45,26 @@ public class CommandHandler {
      * @return The output of the command execution.
      */
     public String handleCommand(String input) {
-        String[] parts = input.split("\\s+", 3);
-        String mainCommand = parts[0].toLowerCase();
-        String subCommand = parts.length > 1 ? parts[1].toLowerCase() : "";
-
-        Command command = commands.get(mainCommand + " " + subCommand);
-        if (command == null) {
-            command = commands.get(mainCommand);
+        String[] parts = input.split("\\s+");
+        if (parts.length < 1) {
+            return ERROR_MESSAGE_UNKNOWN;
         }
+
+        String mainCommand = parts[0].toLowerCase();
+        if (parts.length > 1) {
+            mainCommand += " " + parts[1].toLowerCase();
+        }
+
+        Command command = commands.get(mainCommand);
         if (command != null) {
             return command.execute(parts);
         }
+        // try to execute the command without the second part
+        command = commands.get(parts[0].toLowerCase());
+        if (command != null) {
+            return command.execute(parts);
+        }
+
         return ERROR_MESSAGE_UNKNOWN;
     }
 
