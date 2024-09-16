@@ -93,7 +93,12 @@ public final class OutputFormatter {
         Collections.sort(connections, (c1, c2) -> {
             String name1 = c1.getSystem1().getName();
             String name2 = c2.getSystem1().getName();
-            return name1.compareTo(name2);
+            int nameCompare = name1.compareTo(name2);
+            if (nameCompare != 0) {
+                return nameCompare;
+            }
+            // if the first system names are equal, sort by the second system name
+            return c1.getSystem2().getName().compareTo(c2.getSystem2().getName());
         });
     }
 }

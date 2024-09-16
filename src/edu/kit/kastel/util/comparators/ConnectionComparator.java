@@ -28,12 +28,15 @@ public class ConnectionComparator implements Comparator<Connection> {
         }
 
         if (c1HasRouter && c2HasRouter) {
-            // if both have a router, sort by the name of the first system
-            String c1NonRouter = c1.getSystem1() instanceof Router ? c1.getSystem2().getName() : c1.getSystem1().getName();
-            String c2NonRouter = c2.getSystem1() instanceof Router ? c2.getSystem2().getName() : c2.getSystem1().getName();
-            return c1NonRouter.compareTo(c2NonRouter);
+            // both have a router, sort by weight.
+            return Integer.compare(c1.getWeight(), c2.getWeight());
         }
-        // if both do not have a router, sort by the name of the first system
-        return c1.getSystem1().getName().compareTo(c2.getSystem1().getName());
+
+        // neither has a router, sort by name and then by weight.
+        int nameCompare = c1.getSystem1().getName().compareTo(c2.getSystem1().getName());
+        if (nameCompare != 0) {
+            return nameCompare;
+        }
+        return Integer.compare(c1.getWeight(), c2.getWeight());
     }
 }
