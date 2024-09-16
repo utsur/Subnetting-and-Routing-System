@@ -11,6 +11,10 @@ import java.util.Set;
  * @author utsur
  */
 public class Subnet {
+    private static final int BITS_IN_BYTE = 8;
+    private static final int BYTES_IN_IP = 4;
+    private static final String IP_DELIMITER = "\\.";
+    private static final String CIDR_DELIMITER = "/";
     private final String cidr;
     private final Set<Systems> systems;
     private Router router;
@@ -41,6 +45,46 @@ public class Subnet {
      */
     public String getCidr() {
         return cidr;
+    }
+
+    /**
+     * This method returns the first IP address of the subnet.
+     * @return the first IP address of the subnet.
+     */
+    public String getFirstIp() {
+        String[] parts = cidr.split(CIDR_DELIMITER);
+        return parts[0];
+    }
+
+    /**
+     * This method returns the last IP address of the subnet.
+     * @return the last IP address of the subnet.
+     */
+    public String getLastIp() {
+        String[] parts = cidr.split(CIDR_DELIMITER);
+        String ip = parts[0];
+        int prefixLength = Integer.parseInt(parts[1]);
+
+        String[] octets = ip.split(IP_DELIMITER);
+        int[] ipInts = new int[BYTES_IN_IP];
+        for (int i = 0; i < BYTES_IN_IP; i++) {
+            ipInts[i] = Integer.parseInt(octets[i]);
+        }
+
+        int hostBits = BYTES_IN_IP * BITS_IN_BYTE - prefixLength;
+        for (int i = BYTES_IN_IP - 1; i >= 0; i--) {
+            if (hostBits >= BITS_IN_BYTE) {
+                ipInts[i] = 255;
+                hostBits -= BITS_IN_BYTE;
+            } else if (hostBits > 0) {
+                ipInts[i] |= (1 << hostBits) - 1;
+                break;
+            } else {
+                break;
+            }
+        }
+
+        return ipInts[0] + "." + ipInts[1] + "." + ipInts[2] + "." + ipInts[3];
     }
 
     /**

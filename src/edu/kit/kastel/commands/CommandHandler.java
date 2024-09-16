@@ -1,5 +1,8 @@
 package edu.kit.kastel.commands;
 
+import edu.kit.kastel.commands.list.ListRangeCommand;
+import edu.kit.kastel.commands.list.ListSubnetsCommand;
+import edu.kit.kastel.commands.list.ListSystemsCommand;
 import edu.kit.kastel.model.Network;
 
 import java.util.HashMap;
@@ -22,6 +25,8 @@ public class CommandHandler {
         commands = new HashMap<>();
         commands.put("load", new LoadNetworkCommand(network));
         commands.put("list", new ListSubnetsCommand(network));
+        commands.put("list range", new ListRangeCommand(network));
+        commands.put("list systems", new ListSystemsCommand(network));
         commands.put("quit", new QuitCommand());
     }
 
@@ -31,10 +36,14 @@ public class CommandHandler {
      * @return The output of the command execution.
      */
     public String handleCommand(String input) {
-        String[] parts = input.split("\\s+");
+        String[] parts = input.split("\\s+", 3);
         String mainCommand = parts[0].toLowerCase();
+        String subCommand = parts.length > 1 ? parts[1].toLowerCase() : "";
 
-        Command command = commands.get(mainCommand);
+        Command command = commands.get(mainCommand + " " + subCommand);
+        if (command == null) {
+            command = commands.get(mainCommand);
+        }
         if (command != null) {
             return command.execute(parts);
         }

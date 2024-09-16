@@ -1,5 +1,6 @@
-package edu.kit.kastel.commands;
+package edu.kit.kastel.commands.list;
 
+import edu.kit.kastel.commands.Command;
 import edu.kit.kastel.model.Network;
 import edu.kit.kastel.model.Subnet;
 

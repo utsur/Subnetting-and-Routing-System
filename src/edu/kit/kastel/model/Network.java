@@ -40,6 +40,20 @@ public class Network {
     }
 
     /**
+     * Returns the subnet with the given CIDR.
+     * @param cidr The CIDR of the subnet.
+     * @return The subnet with the given CIDR.
+     */
+    public Subnet getSubnetByCidr(String cidr) {
+        for (Subnet subnet : subnets) {
+            if (subnet.getCidr().equals(cidr)) {
+                return subnet;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Adds a system to the network.
      * @param system The system to add.
      */
