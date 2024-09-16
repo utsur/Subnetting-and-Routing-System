@@ -21,7 +21,7 @@ public final class OutputFormatter {
     private static final String SUBGRAPH_START = "    subgraph ";
     private static final String SUBGRAPH_END = "    end";
     private static final String SYSTEM_FORMAT = "        %s[%s]";
-    private static final String CONNECTION_FORMAT = "        %s <--> |%d| %s";
+    private static final String CONNECTION_FORMAT = "        %s <-->|%d| %s";
     private static final String INTER_SUBNET_CONNECTION_FORMAT = "    %s <--> %s";
     private static final String NEW_LINE = "\n";
 
