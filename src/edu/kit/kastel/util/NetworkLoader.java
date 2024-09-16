@@ -35,8 +35,8 @@ public class NetworkLoader {
         Subnet currentSubnet = null;
 
         List<String> lines = FileHelper.readAllLines(filePath);
-        for (String line : lines) {
-            line = line.trim();
+        for (String originalLine : lines) {
+            String line = originalLine.trim();
             if (line.isEmpty()) {
                 continue;
             }
