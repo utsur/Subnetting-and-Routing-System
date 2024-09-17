@@ -16,6 +16,7 @@ import java.util.List;
 public class SendPacketCommand implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'send packet <source_ip> <destination_ip>'";
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
+    private static final String ERROR_SAME_IP = "Error, Source and destination IP addresses cannot be the same.";
     private static final String ERROR_NO_PATH = "Error, No path found between the specified systems.";
     private static final int EXPECTED_ARGS = 4;
     private final Network network;
@@ -38,6 +39,10 @@ public class SendPacketCommand implements Command {
 
         String sourceIp = args[2];
         String destinationIp = args[3];
+
+        if (sourceIp.equals(destinationIp)) {
+            return ERROR_SAME_IP;
+        }
 
         Systems source = network.getSystemByIp(sourceIp);
         Systems destination = network.getSystemByIp(destinationIp);
