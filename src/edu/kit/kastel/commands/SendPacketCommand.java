@@ -61,13 +61,6 @@ public class SendPacketCommand implements Command {
     }
 
     private String formatPath(List<Systems> path) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < path.size(); i++) {
-            sb.append(path.get(i).getIpAddress());
-            if (i < path.size() - 1) {
-                sb.append(" ");
-            }
-        }
-        return sb.toString();
+        return String.join(" ", path.stream().map(Systems::getIpAddress).toList());
     }
 }

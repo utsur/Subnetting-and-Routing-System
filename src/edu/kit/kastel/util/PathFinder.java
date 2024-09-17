@@ -37,16 +37,18 @@ public class PathFinder {
     public List<Systems> findShortestPath(Systems source, Systems destination) {
         Map<Systems, Integer> distances = new HashMap<>();
         Map<Systems, Systems> previousSystems = new HashMap<>();
-        List<Systems> unvisitedSystems = new ArrayList<>();
+        List<Systems> unvisitedSystems = new ArrayList<>(network.getSystems().values());
 
-        for (Systems system : network.getSystems().values()) {
+        for (Systems system : unvisitedSystems) {
             distances.put(system, Integer.MAX_VALUE);
-            unvisitedSystems.add(system);
         }
         distances.put(source, 0);
 
         while (!unvisitedSystems.isEmpty()) {
             Systems current = getMinDistanceSystem(unvisitedSystems, distances);
+            if (current == null) {
+                break;  // No path found
+            }
             unvisitedSystems.remove(current);
 
             if (current.equals(destination)) {
