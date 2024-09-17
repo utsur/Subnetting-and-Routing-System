@@ -17,7 +17,6 @@ public class AddConnectionCommand implements Command {
     private static final String ERROR_SAME_SUBNET = "Error, Connections between routers in the same subnet are not allowed.";
     private static final String ERROR_DIFFERENT_SUBNET = "Error, Only routers can have connections to other subnets.";
     private static final String ERROR_CONNECTION_EXISTS = "Error, Connection already exists.";
-    private static final String SUCCESS_MESSAGE = "Connection added successfully.";
     private static final int MIN_ARGS = 4;
     private static final int MAX_ARGS = 5;
     private final Network network;
@@ -71,6 +70,6 @@ public class AddConnectionCommand implements Command {
         }
 
         network.addConnection(new Connection(system1, system2, weight));
-        return SUCCESS_MESSAGE;
+        return null;
     }
 }
