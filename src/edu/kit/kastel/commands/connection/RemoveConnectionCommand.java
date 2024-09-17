@@ -13,7 +13,6 @@ public class RemoveConnectionCommand implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'remove connection <ip1> <ip2>'";
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
     private static final String ERROR_NO_CONNECTION = "Error, No connection exists between the specified systems.";
-    private static final String SUCCESS_MESSAGE = "Connection removed successfully.";
     private static final int EXPECTED_ARGS = 4;
     private final Network network;
 
@@ -46,6 +45,6 @@ public class RemoveConnectionCommand implements Command {
         }
 
         network.removeConnection(system1, system2);
-        return SUCCESS_MESSAGE;
+        return null;
     }
 }
