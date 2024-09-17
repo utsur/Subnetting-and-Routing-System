@@ -1,8 +1,10 @@
 package edu.kit.kastel.commands;
 
 import edu.kit.kastel.model.Network;
+import edu.kit.kastel.util.FileHelper;
 import edu.kit.kastel.util.NetworkLoader;
-import edu.kit.kastel.util.OutputFormatter;
+
+import java.util.List;
 
 /**
  * Command to load a network from a file.
@@ -30,12 +32,19 @@ public class LoadNetworkCommand implements Command {
             return ERROR_FORMAT;
         }
         String path = args[2];
+        // Read the file content and print it to the console.
+        List<String> fileContent = FileHelper.readAllLines(path);
+        for (String line : fileContent) {
+            System.out.println(line);
+        }
+        // Parse and validate the file content.
         Network loadedNetwork = loader.loadNetwork(path);
         if (loadedNetwork == null) {
             return ERROR_LOAD;
         }
-
+        // Actualize the network with the loaded data.
         network.updateFrom(loadedNetwork);
-        return OutputFormatter.toMermaid(network);
+
+        return null;
     }
 }
