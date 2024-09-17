@@ -4,12 +4,11 @@ import edu.kit.kastel.model.Connection;
 import edu.kit.kastel.model.Network;
 import edu.kit.kastel.model.Systems;
 
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 /**
  * A helper class for finding paths in a network.
@@ -28,28 +27,28 @@ public class PathFinder {
     }
 
     /**
-     * Finds the shortest path between two systems in the network.
+     * Finds the shortest path between the source and destination systems.
      * This method uses the Dijkstra algorithm to find the shortest path.
-     * The weight of the connections is used as the distance between systems.
-     * If no weight is specified, the distance is set to 1.
      * If no path is found, null is returned.
      * @param source The source system.
      * @param destination The destination system.
-     * @return The shortest path between the source and destination systems.
+     * @return The shortest path between the systems, or null if no path is found.
      */
     public List<Systems> findShortestPath(Systems source, Systems destination) {
         Map<Systems, Integer> distances = new HashMap<>();
         Map<Systems, Systems> previousSystems = new HashMap<>();
-        PriorityQueue<Systems> queue = new PriorityQueue<>(Comparator.comparingInt(distances::get));
+        List<Systems> unvisitedSystems = new ArrayList<>();
 
         for (Systems system : network.getSystems().values()) {
             distances.put(system, Integer.MAX_VALUE);
+            unvisitedSystems.add(system);
         }
         distances.put(source, 0);
-        queue.add(source);
 
-        while (!queue.isEmpty()) {
-            Systems current = queue.poll();
+        while (!unvisitedSystems.isEmpty()) {
+            Systems current = getMinDistanceSystem(unvisitedSystems, distances);
+            unvisitedSystems.remove(current);
+
             if (current.equals(destination)) {
                 return reconstructPath(previousSystems, destination);
             }
@@ -62,21 +61,34 @@ public class PathFinder {
                     neighbor = connection.getSystem1();
                 }
 
-                if (neighbor != null) {
+                if (neighbor != null && unvisitedSystems.contains(neighbor)) {
                     int weight = connection.getWeight() != null ? connection.getWeight() : 1;
                     int alternativeDistance = distances.get(current) + weight;
 
                     if (alternativeDistance < distances.get(neighbor)) {
                         distances.put(neighbor, alternativeDistance);
                         previousSystems.put(neighbor, current);
-                        queue.remove(neighbor);
-                        queue.add(neighbor);
                     }
                 }
             }
         }
 
         return null; // No path found
+    }
+
+    private Systems getMinDistanceSystem(List<Systems> systems, Map<Systems, Integer> distances) {
+        Systems minSystem = null;
+        int minDistance = Integer.MAX_VALUE;
+
+        for (Systems system : systems) {
+            int distance = distances.get(system);
+            if (distance < minDistance) {
+                minDistance = distance;
+                minSystem = system;
+            }
+        }
+
+        return minSystem;
     }
 
     private List<Systems> reconstructPath(Map<Systems, Systems> previousSystems, Systems destination) {
