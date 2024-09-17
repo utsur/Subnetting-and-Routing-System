@@ -19,6 +19,7 @@ public class RemoveComputerCommand implements Command {
     private static final String ERROR_INVALID_SUBNET = "Error, Invalid subnet.";
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
     private static final String ERROR_NOT_COMPUTER = "Error, The specified IP does not belong to a computer.";
+    private static final String ERROR_NOT_IN_SUBNET = "Error, The specified IP does not exist in the given subnet.";
     private static final int EXPECTED_ARGS = 4;
     private final Network network;
 
@@ -51,6 +52,10 @@ public class RemoveComputerCommand implements Command {
 
         if (!(system instanceof Computer)) {
             return ERROR_NOT_COMPUTER;
+        }
+
+        if (system.getSubnet() != subnet) {
+            return ERROR_NOT_IN_SUBNET;
         }
 
         network.removeSystem(system);
