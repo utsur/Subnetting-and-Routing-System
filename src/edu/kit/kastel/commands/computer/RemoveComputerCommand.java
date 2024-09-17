@@ -56,6 +56,6 @@ public class RemoveComputerCommand implements Command {
         network.removeSystem(system);
         subnet.removeSystem(system);
 
-        return "Computer removed successfully.";
+        return null;
     }
 }

@@ -53,6 +53,6 @@ public class AddComputerCommand implements Command {
         network.addSystem(computer);
         subnet.addSystem(computer);
 
-        return "Computer added successfully.";
+        return null;
     }
 }
