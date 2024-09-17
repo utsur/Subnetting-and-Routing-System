@@ -32,9 +32,7 @@ public final class Main {
             String input = scanner.nextLine().trim();
             String response = commandHandler.handleCommand(input);
 
-            if (response != null) {
-                commandHandler.printOutput(response);
-            }
+            printOutput(response);
 
             if (input.equalsIgnoreCase(QUIT)) {
                 isRunning = false;
@@ -42,5 +40,15 @@ public final class Main {
         }
 
         scanner.close();
+    }
+
+    /**
+     * Prints the output if it's not null or empty.
+     * @param output the output to print
+     */
+    private static void printOutput(String output) {
+        if (output != null && !output.isEmpty()) {
+            System.out.println(output);
+        }
     }
 }

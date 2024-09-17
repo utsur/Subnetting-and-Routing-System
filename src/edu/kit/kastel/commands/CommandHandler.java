@@ -19,13 +19,16 @@ import java.util.Map;
  */
 public class CommandHandler {
     private static final String ERROR_MESSAGE_UNKNOWN = "Error, Unknown command.";
+    private static final String ERROR_NO_NETWORK = "Error, No network loaded. Use 'load network' first.";
     private final Map<String, Command> commands;
+    private final Network network;
 
     /**
      * This constructor creates a new CommandHandler object with the given network.
      * @param network The network to handle commands for.
      */
     public CommandHandler(Network network) {
+        this.network = network;
         commands = new HashMap<>();
         commands.put("load", new LoadNetworkCommand(network));
         commands.put("list", new ListSubnetsCommand(network));
@@ -46,35 +49,23 @@ public class CommandHandler {
      */
     public String handleCommand(String input) {
         String[] parts = input.split("\\s+");
-        if (parts.length < 1) {
-            return ERROR_MESSAGE_UNKNOWN;
-        }
-
         String mainCommand = parts[0].toLowerCase();
-        if (parts.length > 1) {
-            mainCommand += " " + parts[1].toLowerCase();
+        String subCommand = parts.length > 1 ? parts[1].toLowerCase() : "";
+
+        Command command = commands.get(mainCommand + " " + subCommand);
+        if (command == null) {
+            command = commands.get(mainCommand);
         }
 
-        Command command = commands.get(mainCommand);
         if (command != null) {
+            // Check if network is loaded for all commands except 'load' and 'quit'
+            if (!(command instanceof LoadNetworkCommand) && !(command instanceof QuitCommand)) {
+                if (network.getSubnets().isEmpty()) {
+                    return ERROR_NO_NETWORK;
+                }
+            }
             return command.execute(parts);
         }
-        // try to execute the command without the second part
-        command = commands.get(parts[0].toLowerCase());
-        if (command != null) {
-            return command.execute(parts);
-        }
-
         return ERROR_MESSAGE_UNKNOWN;
-    }
-
-    /**
-     * This method prints the output of the command.
-     * @param output The output to print.
-     */
-    public void printOutput(String output) {
-        if (output != null && !output.isEmpty()) {
-            System.out.println(output);
-        }
     }
 }
