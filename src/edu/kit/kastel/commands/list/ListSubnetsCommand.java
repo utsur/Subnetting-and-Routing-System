@@ -36,7 +36,20 @@ public class ListSubnetsCommand implements Command {
         for (Subnet subnet : network.getSubnets()) {
             subnetCidrs.add(subnet.getCidr());
         }
-        Collections.sort(subnetCidrs);
+        Collections.sort(subnetCidrs, this::compareSubnetCidrs);
         return String.join(" ", subnetCidrs);
+    }
+
+    private int compareSubnetCidrs(String cidr1, String cidr2) {
+        String[] parts1 = cidr1.split("\\.|/");
+        String[] parts2 = cidr2.split("\\.|/");
+        for (int i = 0; i < 4; i++) {
+            int octet1 = Integer.parseInt(parts1[i]);
+            int octet2 = Integer.parseInt(parts2[i]);
+            if (octet1 != octet2) {
+                return Integer.compare(octet1, octet2);
+            }
+        }
+        return Integer.compare(Integer.parseInt(parts1[4]), Integer.parseInt(parts2[4]));
     }
 }
