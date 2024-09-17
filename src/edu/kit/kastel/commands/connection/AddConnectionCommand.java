@@ -14,6 +14,7 @@ import edu.kit.kastel.model.Systems;
 public class AddConnectionCommand implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'add connection <ip1> <ip2> [<weight>]'";
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
+    private static final String ERROR_SAME_IP = "Error, Cannot create a connection to the same IP address.";
     private static final String ERROR_SAME_SUBNET = "Error, Connections between routers in the same subnet are not allowed.";
     private static final String ERROR_DIFFERENT_SUBNET = "Error, Only routers can have connections to other subnets.";
     private static final String ERROR_CONNECTION_EXISTS = "Error, Connection already exists.";
@@ -37,6 +38,11 @@ public class AddConnectionCommand implements Command {
 
         String ip1 = args[2];
         String ip2 = args[3];
+
+        if (ip1.equals(ip2)) {
+            return ERROR_SAME_IP;
+        }
+
         Integer weight = null;
 
         if (args.length == MAX_ARGS) {
