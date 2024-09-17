@@ -19,9 +19,11 @@ public class NetworkLoader {
     private static final String SYSTEM_DELIMITER = "[";
     private static final String CONNECTION_DELIMITER = "<-->";
     private static final String ROUTER_IDENTIFIER = "Router";
-    private static final String ERROR_PARSE_SUBNET = "Error parsing subnet: ";
-    private static final String ERROR_PARSE_SYSTEM = "Error parsing system: ";
-    private static final String ERROR_PARSE_CONNECTION = "Error parsing connection: ";
+    private static final String ERROR_PARSE_SUBNET = "Error, parsing subnet: ";
+    private static final String ERROR_PARSE_SYSTEM = "Error, parsing system: ";
+    private static final String ERROR_PARSE_CONNECTION = "Error, parsing connection: ";
+    private static final String ERROR_IP_NOT_IN_SUBNET = "Error, IP address %s is not in subnet %s";
+    private static final String ERROR_OUTSIDE_SUBNET = "Error, system outside subnet: ";
 
     /**
      * Load a network from a file.
@@ -44,7 +46,13 @@ public class NetworkLoader {
             if (line.startsWith(SUBGRAPH_PREFIX)) {
                 currentSubnet = parseSubnet(line, network);
             } else if (line.contains(SYSTEM_DELIMITER)) {
-                parseSystem(line, currentSubnet, network);
+                if (currentSubnet == null) {
+                    System.out.println(ERROR_OUTSIDE_SUBNET + line);
+                    return null;
+                }
+                if (!parseSystem(line, currentSubnet, network)) {
+                    return null;
+                }
             } else if (line.contains(CONNECTION_DELIMITER)) {
                 parseConnection(line, network);
             }
@@ -64,15 +72,20 @@ public class NetworkLoader {
         return subnet;
     }
 
-    private void parseSystem(String line, Subnet subnet, Network network) {
+    private boolean parseSystem(String line, Subnet subnet, Network network) {
         String[] parts = line.split("\\[|\\]");
         if (parts.length != 2) {
             System.out.println(ERROR_PARSE_SYSTEM + line);
-            return;
+            return false;
         }
 
         String name = parts[0].trim();
         String ip = parts[1].trim();
+
+        if (!subnet.isIpInSubnet(ip)) {
+            System.out.println(String.format(ERROR_IP_NOT_IN_SUBNET, ip, subnet.getCidr()));
+            return false;
+        }
 
         Systems system;
         if (name.contains(ROUTER_IDENTIFIER)) {
@@ -83,6 +96,7 @@ public class NetworkLoader {
 
         subnet.addSystem(system);
         network.addSystem(system);
+        return true;
     }
 
     private void parseConnection(String line, Network network) {
