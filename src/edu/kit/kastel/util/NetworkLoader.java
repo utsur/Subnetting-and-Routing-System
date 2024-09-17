@@ -7,9 +7,6 @@ import edu.kit.kastel.model.Router;
 import edu.kit.kastel.model.Subnet;
 import edu.kit.kastel.model.Systems;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -18,9 +15,7 @@ import java.util.List;
  * @author utsur
  */
 public class NetworkLoader {
-    private static final String GRAPH_START = "graph";
     private static final String SUBGRAPH_PREFIX = "subgraph";
-    private static final String SUBGRAPH_END = "end";
     private static final String SYSTEM_DELIMITER = "[";
     private static final String CONNECTION_DELIMITER = "<-->";
     private static final String ROUTER_IDENTIFIER = "Router";
@@ -37,12 +32,8 @@ public class NetworkLoader {
      */
     public Network loadNetwork(String filePath) {
         Network network = new Network();
-        List<String> outputLines = new ArrayList<>();
-        outputLines.add(GRAPH_START);
-
         List<String> lines = FileHelper.readAllLines(filePath);
         Subnet currentSubnet = null;
-        List<String> currentSubnetLines = new ArrayList<>();
 
         for (String originalLine : lines) {
             String line = originalLine.trim();
@@ -51,49 +42,15 @@ public class NetworkLoader {
             }
 
             if (line.startsWith(SUBGRAPH_PREFIX)) {
-                if (currentSubnet != null) {
-                    finalizeSubnet(currentSubnetLines, outputLines);
-                }
                 currentSubnet = parseSubnet(line, network);
-                currentSubnetLines = new ArrayList<>();
-                currentSubnetLines.add("    " + line);
             } else if (line.contains(SYSTEM_DELIMITER)) {
                 parseSystem(line, currentSubnet, network);
-                currentSubnetLines.add("        " + line);
             } else if (line.contains(CONNECTION_DELIMITER)) {
                 parseConnection(line, network);
-                currentSubnetLines.add("        " + line);
-            } else if (line.equals(SUBGRAPH_END)) {
-                currentSubnetLines.add("    " + line);
-            } else {
-                outputLines.add(line);
             }
-        }
-
-        if (currentSubnet != null) {
-            finalizeSubnet(currentSubnetLines, outputLines);
         }
 
         return network;
-    }
-
-    private void finalizeSubnet(List<String> subnetLines, List<String> outputLines) {
-        List<String> systemLines = new ArrayList<>();
-        List<String> connectionLines = new ArrayList<>();
-
-        for (String line : subnetLines) {
-            if (line.contains(SYSTEM_DELIMITER)) {
-                systemLines.add(line);
-            } else if (line.contains(CONNECTION_DELIMITER)) {
-                connectionLines.add(line);
-            } else {
-                outputLines.add(line);
-            }
-        }
-
-        Collections.sort(systemLines, new SystemComparator());
-        outputLines.addAll(systemLines);
-        outputLines.addAll(connectionLines);
     }
 
     private Subnet parseSubnet(String line, Network network) {
@@ -165,22 +122,6 @@ public class NetworkLoader {
             network.addConnection(new Connection(system1, system2, weight));
         } else {
             System.out.println(ERROR_PARSE_CONNECTION + line);
-        }
-    }
-
-    private static final class SystemComparator implements Comparator<String> {
-        @Override
-        public int compare(String s1, String s2) {
-            boolean isRouter1 = s1.contains(ROUTER_IDENTIFIER);
-            boolean isRouter2 = s2.contains(ROUTER_IDENTIFIER);
-
-            if (isRouter1 && !isRouter2) {
-                return -1;
-            } else if (!isRouter1 && isRouter2) {
-                return 1;
-            } else {
-                return s1.compareTo(s2);
-            }
         }
     }
 }
