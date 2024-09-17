@@ -41,6 +41,20 @@ public class Connection {
     }
 
     /**
+     * Returns the other systems(...).
+     * @param system the system to find the other system for.
+     * @return the other system in the connection.
+     */
+    public Systems getOtherSystem(Systems system) {
+        if (system.equals(getSystem1())) {
+            return getSystem2();
+        } else if (system.equals(getSystem2())) {
+            return getSystem1();
+        }
+        return null;
+    }
+
+    /**
      * Returns the weight of the connection.
      * @return the weight of the connection.
      */

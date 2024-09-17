@@ -6,7 +6,6 @@ import edu.kit.kastel.model.Systems;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,24 +45,16 @@ public class PathFinder {
 
         while (!unvisitedSystems.isEmpty()) {
             Systems current = getMinDistanceSystem(unvisitedSystems, distances);
-            if (current == null) {
-                break;  // No path found
-            }
             unvisitedSystems.remove(current);
 
             if (current.equals(destination)) {
                 return reconstructPath(previousSystems, destination);
             }
 
-            for (Connection connection : network.getConnections()) {
-                Systems neighbor = null;
-                if (connection.getSystem1().equals(current)) {
-                    neighbor = connection.getSystem2();
-                } else if (connection.getSystem2().equals(current)) {
-                    neighbor = connection.getSystem1();
-                }
-
-                if (neighbor != null && unvisitedSystems.contains(neighbor)) {
+            List<Connection> connections = getConnections(current);
+            for (Connection connection : connections) {
+                Systems neighbor = connection.getOtherSystem(current);
+                if (unvisitedSystems.contains(neighbor)) {
                     int weight = connection.getWeight() != null ? connection.getWeight() : 1;
                     int alternativeDistance = distances.get(current) + weight;
 
@@ -93,12 +84,22 @@ public class PathFinder {
         return minSystem;
     }
 
+    private List<Connection> getConnections(Systems system) {
+        List<Connection> connections = new ArrayList<>();
+        for (Connection connection : network.getConnections()) {
+            if (connection.getSystem1().equals(system) || connection.getSystem2().equals(system)) {
+                connections.add(connection);
+            }
+        }
+        return connections;
+    }
+
     private List<Systems> reconstructPath(Map<Systems, Systems> previousSystems, Systems destination) {
-        LinkedList<Systems> path = new LinkedList<>();
+        List<Systems> path = new ArrayList<>();
         Systems current = destination;
 
         while (current != null) {
-            path.addFirst(current);
+            path.add(0, current);
             current = previousSystems.get(current);
         }
 
