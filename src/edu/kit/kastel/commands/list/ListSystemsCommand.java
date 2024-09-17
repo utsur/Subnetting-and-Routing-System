@@ -2,6 +2,7 @@ package edu.kit.kastel.commands.list;
 
 import edu.kit.kastel.commands.Command;
 import edu.kit.kastel.model.Network;
+import edu.kit.kastel.model.Router;
 import edu.kit.kastel.model.Subnet;
 import edu.kit.kastel.model.Systems;
 
@@ -37,11 +38,39 @@ public class ListSystemsCommand implements Command {
         if (subnet == null) {
             return ERROR_SUBNET;
         }
+
         List<String> ipAddresses = new ArrayList<>();
+        // Add router IP first if it exists
         for (Systems system : subnet.getSystems()) {
-            ipAddresses.add(system.getIpAddress());
+            if (system instanceof Router) {
+                ipAddresses.add(system.getIpAddress());
+                break;
+            }
         }
-        Collections.sort(ipAddresses);
+        // Add other IPs
+        for (Systems system : subnet.getSystems()) {
+            if (!(system instanceof Router)) {
+                ipAddresses.add(system.getIpAddress());
+            }
+        }
+        // Sort non-router IPs
+        if (ipAddresses.size() > 1) {
+            Collections.sort(ipAddresses.subList(1, ipAddresses.size()), this::compareIpAddresses);
+        }
+
         return String.join(" ", ipAddresses);
+    }
+
+    private int compareIpAddresses(String ip1, String ip2) {
+        String[] parts1 = ip1.split("\\.");
+        String[] parts2 = ip2.split("\\.");
+        for (int i = 0; i < 4; i++) {
+            int octet1 = Integer.parseInt(parts1[i]);
+            int octet2 = Integer.parseInt(parts2[i]);
+            if (octet1 != octet2) {
+                return Integer.compare(octet1, octet2);
+            }
+        }
+        return 0;
     }
 }
