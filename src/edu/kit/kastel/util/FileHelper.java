@@ -3,6 +3,7 @@ package edu.kit.kastel.util;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,7 +26,8 @@ public final class FileHelper {
         try {
             return Files.readAllLines(Path.of(path));
         } catch (IOException e) {
-            throw new IllegalArgumentException(ERROR_INVALID_PATH);
+            System.out.println(ERROR_INVALID_PATH);
+            return new ArrayList<>();
         }
     }
 }

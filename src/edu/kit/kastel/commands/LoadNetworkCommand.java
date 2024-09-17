@@ -34,6 +34,10 @@ public class LoadNetworkCommand implements Command {
         String path = args[2];
         // Read the file content and print it to the console.
         List<String> fileContent = FileHelper.readAllLines(path);
+        if (fileContent.isEmpty()) {
+            return null; // No error message, FileHelper already printed an error message.
+        }
+
         for (String line : fileContent) {
             System.out.println(line);
         }
@@ -44,7 +48,6 @@ public class LoadNetworkCommand implements Command {
         }
         // Actualize the network with the loaded data.
         network.updateFrom(loadedNetwork);
-
         return null;
     }
 }
