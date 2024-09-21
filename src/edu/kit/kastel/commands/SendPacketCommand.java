@@ -18,6 +18,10 @@ public class SendPacketCommand implements Command {
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
     private static final String ERROR_SAME_IP = "Error, Source and destination IP addresses cannot be the same.";
     private static final String ERROR_NO_PATH = "Error, No path found between the specified systems.";
+    private static final int SECOND_ARG = 2;
+    private static final int THIRD_ARG = 3;
+
+    private static final String EMPTY_SPACE = " ";
     private static final int EXPECTED_ARGS = 4;
     private final Network network;
     private final PathFinder pathFinder;
@@ -37,8 +41,8 @@ public class SendPacketCommand implements Command {
             return ERROR_FORMAT;
         }
 
-        String sourceIp = args[2];
-        String destinationIp = args[3];
+        String sourceIp = args[SECOND_ARG];
+        String destinationIp = args[THIRD_ARG];
 
         if (sourceIp.equals(destinationIp)) {
             return ERROR_SAME_IP;
@@ -65,7 +69,7 @@ public class SendPacketCommand implements Command {
         for (int i = 0; i < path.size(); i++) {
             sb.append(path.get(i).getIpAddress());
             if (i < path.size() - 1) {
-                sb.append(" ");
+                sb.append(EMPTY_SPACE);
             }
         }
         return sb.toString();
