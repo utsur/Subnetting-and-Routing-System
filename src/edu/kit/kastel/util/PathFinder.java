@@ -19,6 +19,7 @@ import java.util.Map;
 public class PathFinder {
     private static final int INTER_SUBNET_WEIGHT = 1;
     private final Network network;
+    private Map<Router, Map<String, List<Router>>> bgpTables;
 
     /**
      * Creates a new pathfinder with the given network.
@@ -26,7 +27,59 @@ public class PathFinder {
      */
     public PathFinder(Network network) {
         this.network = network;
+        this.bgpTables = new HashMap<>();
+        initializeBGPTables();
     }
+
+    private void initializeBGPTables() {
+        for (Subnet subnet : network.getSubnets()) {
+            Router router = subnet.getRouter();
+            Map<String, List<Router>> routingTable = new HashMap<>();
+            routingTable.put(subnet.getCidr(), new ArrayList<>(List.of(router)));
+            bgpTables.put(router, routingTable);
+        }
+        exchangeBGPTables();
+    }
+
+    private void exchangeBGPTables() {
+        boolean changed;
+        do {
+            changed = false;
+            for (Router router : bgpTables.keySet()) {
+                for (Connection conn : network.getConnections()) {
+                    if (conn.getSystem1() == router && conn.getSystem2() instanceof Router) {
+                        Router neighbor = (Router) conn.getSystem2();
+                        changed |= updateBGPTable(router, neighbor);
+                    }
+                }
+            }
+        } while (changed);
+    }
+
+    private boolean updateBGPTable(Router router, Router neighbor) {
+        boolean changed = false;
+        Map<String, List<Router>> routerTable = bgpTables.get(router);
+        Map<String, List<Router>> neighborTable = bgpTables.get(neighbor);
+
+        for (Map.Entry<String, List<Router>> entry : neighborTable.entrySet()) {
+            String subnet = entry.getKey();
+            List<Router> path = entry.getValue();
+
+            if (!routerTable.containsKey(subnet) || (path.size() + 1 < routerTable.get(subnet).size())
+                || (path.size() + 1 == routerTable.get(subnet).size()
+                && neighbor.getIpAddress().compareTo(routerTable.get(subnet).get(0).getIpAddress()) < 0)) {
+
+                List<Router> newPath = new ArrayList<>();
+                newPath.add(neighbor);
+                newPath.addAll(path);
+                routerTable.put(subnet, newPath);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+
 
     /**
      * Finds the shortest path between the source and destination systems.
@@ -37,43 +90,14 @@ public class PathFinder {
      * @return The shortest path between the systems, or null if no path is found.
      */
     public List<Systems> findShortestPath(Systems source, Systems destination) {
-        Map<Systems, Integer> distances = new HashMap<>();
-        Map<Systems, Systems> previousSystems = new HashMap<>();
-        List<Systems> unvisitedSystems = new ArrayList<>(network.getSystems().values());
-
-        for (Systems system : unvisitedSystems) {
-            distances.put(system, Integer.MAX_VALUE);
+        if (source.getSubnet().equals(destination.getSubnet())) {
+            return findIntraSubnetPath(source, destination);
+        } else {
+            return findInterSubnetPath(source, destination);
         }
-        distances.put(source, 0);
-
-        while (!unvisitedSystems.isEmpty()) {
-            Systems current = getMinDistanceSystem(unvisitedSystems, distances);
-            if (current == null) {
-                break; // No path found
-            }
-            unvisitedSystems.remove(current);
-
-            if (current.equals(destination)) {
-                return reconstructPath(previousSystems, destination);
-            }
-
-            List<Connection> connections = getConnections(current);
-            for (Connection connection : connections) {
-                Systems neighbor = connection.getOtherSystem(current);
-                if (unvisitedSystems.contains(neighbor)) {
-                    int weight = getWeight(current, neighbor, connection);
-                    int alternativeDistance = distances.get(current) + weight;
-
-                    if (alternativeDistance < distances.get(neighbor)) {
-                        distances.put(neighbor, alternativeDistance);
-                        previousSystems.put(neighbor, current);
-                    }
-                }
-            }
-        }
-
-        return null; // No path found
     }
+
+
 
     private int getWeight(Systems current, Systems neighbor, Connection connection) {
         if (current.getSubnet().equals(neighbor.getSubnet())) {
@@ -171,23 +195,12 @@ public class PathFinder {
         Router sourceRouter = source.getSubnet().getRouter();
         Router destRouter = destination.getSubnet().getRouter();
 
-        List<Systems> pathToSourceRouter = findIntraSubnetPath(source, sourceRouter);
-        if (pathToSourceRouter == null) {
-            return null; // No path to source router
-        }
-        path.addAll(pathToSourceRouter);
+        path.addAll(findIntraSubnetPath(source, sourceRouter));
 
-        List<Router> routerPath = findShortestRouterPath(sourceRouter, destRouter);
-        if (routerPath == null) {
-            return null; // No path between routers
-        }
-        path.addAll(new ArrayList<>(routerPath));
+        List<Router> routerPath = bgpTables.get(sourceRouter).get(destination.getSubnet().getCidr());
+        path.addAll(routerPath);
 
-        List<Systems> pathFromDestRouter = findIntraSubnetPath(destRouter, destination);
-        if (pathFromDestRouter == null) {
-            return null; // No path from dest router to destination
-        }
-        path.addAll(pathFromDestRouter);
+        path.addAll(findIntraSubnetPath(destRouter, destination));
 
         return path;
     }
@@ -215,45 +228,6 @@ public class PathFinder {
             }
         }
         return connections;
-    }
-
-    private List<Router> findShortestRouterPath(Router source, Router destination) {
-        Map<Router, Router> previousRouter = new HashMap<>();
-        Map<Router, Integer> distances = new HashMap<>();
-        List<Router> unvisited = new ArrayList<>();
-
-        for (Subnet subnet : network.getSubnets()) {
-            Router router = subnet.getRouter();
-            distances.put(router, router == source ? 0 : Integer.MAX_VALUE);
-            unvisited.add(router);
-        }
-
-        while (!unvisited.isEmpty()) {
-            Router current = getMinDistanceRouter(unvisited, distances);
-            if (current == null) {
-                break; // No more reachable routers
-            }
-            unvisited.remove(current);
-
-            if (current == destination) {
-                return reconstructRouterPath(source, destination, previousRouter);
-            }
-
-            for (Connection conn : network.getConnections()) {
-                if (conn.getSystem1() == current && conn.getSystem2() instanceof Router) {
-                    Router neighbor = (Router) conn.getSystem2();
-                    if (unvisited.contains(neighbor)) {
-                        int newDist = distances.get(current) + INTER_SUBNET_WEIGHT;
-                        if (newDist < distances.get(neighbor)) {
-                            distances.put(neighbor, newDist);
-                            previousRouter.put(neighbor, current);
-                        }
-                    }
-                }
-            }
-        }
-
-        return null; // No path found
     }
 
     private Router getMinDistanceRouter(List<Router> routers, Map<Router, Integer> distances) {
