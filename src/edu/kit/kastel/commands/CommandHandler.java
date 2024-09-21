@@ -30,6 +30,8 @@ public class CommandHandler {
     private static final String REMOVE_COMPUTER_COMMAND = "remove computer";
     private static final String SEND_PACKET_COMMAND = "send packet";
     private static final String  QUIT_COMMAND = "quit";
+    private static final String EMPTY_SPACE = " ";
+    private static final String EMPTY_STRING = "";
 
     private final Map<String, Command> commands;
     private final Network network;
@@ -61,9 +63,9 @@ public class CommandHandler {
     public String handleCommand(String input) {
         String[] parts = input.split("\\s+");
         String mainCommand = parts[0].toLowerCase();
-        String subCommand = parts.length > 1 ? parts[1].toLowerCase() : "";
+        String subCommand = parts.length > 1 ? parts[1].toLowerCase() : EMPTY_STRING;
 
-        Command command = commands.get(mainCommand + " " + subCommand);
+        Command command = commands.get(mainCommand + EMPTY_SPACE + subCommand);
         if (command == null) {
             command = commands.get(mainCommand);
         }
