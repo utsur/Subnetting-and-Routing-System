@@ -156,6 +156,7 @@ public class Network {
                 || (conn.getSystem1() == system2 && conn.getSystem2() == system1)
         );
         updateBGPTables();
+        updateBGPTables();
     }
 
     /**
@@ -181,6 +182,15 @@ public class Network {
     public Set<Connection> getConnections() {
         return new HashSet<>(connections);
     }
+
+    /*
+    private void resetBGPTables() {
+        for (Systems system : systemsByIp.values()) {
+            if (system instanceof Router) {
+                ((Router) system).resetRoutingTable();
+            }
+        }
+    } */
 
     /**
      * This method updates the BGP tables of all routers in the network.

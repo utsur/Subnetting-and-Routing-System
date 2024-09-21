@@ -54,4 +54,12 @@ public class Router extends Systems {
     public Map<String, List<String>> getRoutingTable() {
         return new HashMap<>(routingTable);
     }
+
+    /**
+     * Resets the routing table of the router to the initial state.
+     */
+    public void resetRoutingTable() {
+        this.routingTable.clear();
+        initializeRoutingTable();
+    }
 }

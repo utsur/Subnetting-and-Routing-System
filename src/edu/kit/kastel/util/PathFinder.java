@@ -78,30 +78,33 @@ public class PathFinder {
 
     private List<Systems> findPathAcrossSubnets(Systems source, Systems destination) {
         List<Systems> path = new ArrayList<>();
-
         // Find path from source to source subnets router
         List<Systems> sourceToRouter = findPathInSubnet(source, source.getSubnet().getRouter());
         if (sourceToRouter == null) {
             return null;
         }
         path.addAll(sourceToRouter);
-        // Find path between routers using BGP tables.
-        Router sourceRouter = source.getSubnet().getRouter();
-        List<String> routerPath = sourceRouter.getRoutingTable().get(destination.getSubnet().getCidr());
-        if (routerPath == null) {
-            return null;
-        }
 
-        for (int i = 1; i < routerPath.size(); i++) {
-            Router router = (Router) network.getSystemByIp(routerPath.get(i));
-            path.add(router);
+        // Find path between routers using BGP tables
+        Router currentRouter = source.getSubnet().getRouter();
+        Router destinationRouter = destination.getSubnet().getRouter();
+
+        while (!currentRouter.equals(destinationRouter)) {
+            List<String> routerPath = currentRouter.getRoutingTable().get(destination.getSubnet().getCidr());
+            if (routerPath == null || routerPath.size() < 2) {
+                return null; // No path found
+            }
+            String nextRouterIp = routerPath.get(1); // Get the next hop
+            Router nextRouter = (Router) network.getSystemByIp(nextRouterIp);
+            path.add(nextRouter);
+            currentRouter = nextRouter;
         }
-        // Find path from destination subnets router to destination.
+        // Find path from destination subnets router to destination
         List<Systems> routerToDestination = findPathInSubnet(destination.getSubnet().getRouter(), destination);
         if (routerToDestination == null) {
             return null;
         }
-        path.addAll(routerToDestination.subList(1, routerToDestination.size())); // Exclude the router as it's already in the path.
+        path.addAll(routerToDestination.subList(1, routerToDestination.size())); // Exclude the router as it's already in the path
 
         return path;
     }
