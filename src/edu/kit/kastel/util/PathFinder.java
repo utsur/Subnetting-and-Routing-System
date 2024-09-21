@@ -37,10 +37,51 @@ public class PathFinder {
      * @return The shortest path between the systems, or null if no path is found.
      */
     public List<Systems> findShortestPath(Systems source, Systems destination) {
-        if (source.getSubnet().equals(destination.getSubnet())) {
-            return findIntraSubnetPath(source, destination);
+        Map<Systems, Integer> distances = new HashMap<>();
+        Map<Systems, Systems> previousSystems = new HashMap<>();
+        List<Systems> unvisitedSystems = new ArrayList<>(network.getSystems().values());
+
+        for (Systems system : unvisitedSystems) {
+            distances.put(system, Integer.MAX_VALUE);
+        }
+        distances.put(source, 0);
+
+        while (!unvisitedSystems.isEmpty()) {
+            Systems current = getMinDistanceSystem(unvisitedSystems, distances);
+            if (current == null) {
+                break; // No path found
+            }
+            unvisitedSystems.remove(current);
+
+            if (current.equals(destination)) {
+                return reconstructPath(previousSystems, destination);
+            }
+
+            List<Connection> connections = getConnections(current);
+            for (Connection connection : connections) {
+                Systems neighbor = connection.getOtherSystem(current);
+                if (unvisitedSystems.contains(neighbor)) {
+                    int weight = getWeight(current, neighbor, connection);
+                    int alternativeDistance = distances.get(current) + weight;
+
+                    if (alternativeDistance < distances.get(neighbor)) {
+                        distances.put(neighbor, alternativeDistance);
+                        previousSystems.put(neighbor, current);
+                    }
+                }
+            }
+        }
+
+        return null; // No path found
+    }
+
+    private int getWeight(Systems current, Systems neighbor, Connection connection) {
+        if (current.getSubnet().equals(neighbor.getSubnet())) {
+            // Intra-subnet connection
+            return connection.getWeight() != null ? connection.getWeight() : Integer.MAX_VALUE;
         } else {
-            return findInterSubnetPath(source, destination);
+            // Inter-subnet connection (router to router)
+            return 1;
         }
     }
 
