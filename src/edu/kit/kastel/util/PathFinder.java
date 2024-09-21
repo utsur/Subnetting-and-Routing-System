@@ -261,17 +261,4 @@ public class PathFinder {
 
         return null; // No path found
     }
-
-    public void printBGPTables() {
-        for (Map.Entry<Router, Map<String, List<Router>>> entry : bgpTables.entrySet()) {
-            System.out.println("Router: " + entry.getKey().getIpAddress());
-            for (Map.Entry<String, List<Router>> routeEntry : entry.getValue().entrySet()) {
-                System.out.print("  " + routeEntry.getKey() + ": ");
-                for (Router router : routeEntry.getValue()) {
-                    System.out.print(router.getIpAddress() + " ");
-                }
-                System.out.println();
-            }
-        }
-    }
 }
