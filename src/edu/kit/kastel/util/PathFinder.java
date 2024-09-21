@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A helper class for finding paths in a network.
@@ -19,6 +20,12 @@ import java.util.Map;
  */
 public class PathFinder {
     private static final int INTER_SUBNET_WEIGHT = 1;
+    private static final String ERROR_NO_ROUTER = "Error, Source or destination subnet does not have a router.";
+    private static final String ERROR_NO_PATH_TO_ROUTER = "Error, No path to source router.";
+    private static final String ERROR_NO_BGP_TABLE = "Error, No BGP table for source router.";
+    private static final String ERROR_NO_BGP_PATH = "Error, No BGP path found.";
+    private static final String ERROR_NO_PATH_FROM_ROUTER = "Error, No path from destination router to destination.";
+
     private final Network network;
     private final Map<Router, Map<String, List<Router>>> bgpTables;
 
@@ -27,18 +34,24 @@ public class PathFinder {
      * @param network The network to find paths in.
      */
     public PathFinder(Network network) {
+
         this.network = network;
         this.bgpTables = new HashMap<>();
         initializeBGPTables();
         exchangeBGPTables();
+        debugPrintBGPTables(); // Temporäre Debugging-Ausgabe
     }
 
     private void initializeBGPTables() {
         for (Subnet subnet : network.getSubnets()) {
             Router router = subnet.getRouter();
-            Map<String, List<Router>> routingTable = new HashMap<>();
-            routingTable.put(subnet.getCidr(), List.of(router));
-            bgpTables.put(router, routingTable);
+            if (router != null) {
+                Map<String, List<Router>> routingTable = new HashMap<>();
+                routingTable.put(subnet.getCidr(), List.of(router));
+                bgpTables.put(router, routingTable);
+            } else {
+                System.out.println("Warning: Subnet " + subnet.getCidr() + " has no router.");
+            }
         }
     }
 
@@ -62,12 +75,17 @@ public class PathFinder {
         Map<String, List<Router>> routerTable = bgpTables.get(router);
         Map<String, List<Router>> neighborTable = bgpTables.get(neighbor);
 
+        if (routerTable == null || neighborTable == null) {
+            System.out.println("Warning: BGP table missing for router " + router.getIpAddress() + " or " + neighbor.getIpAddress());
+            return false;
+        }
+
         for (Map.Entry<String, List<Router>> entry : neighborTable.entrySet()) {
             String subnet = entry.getKey();
             List<Router> path = entry.getValue();
 
-            if (!routerTable.containsKey(subnet) || (path.size() + 1 < routerTable.get(subnet).size())
-                || (path.size() + 1 == routerTable.get(subnet).size()
+            if (!routerTable.containsKey(subnet)
+                || (path.size() + 1 < routerTable.get(subnet).size()) || (path.size() + 1 == routerTable.get(subnet).size()
                 && neighbor.getIpAddress().compareTo(routerTable.get(subnet).get(0).getIpAddress()) < 0)) {
 
                 List<Router> newPath = new ArrayList<>();
@@ -78,6 +96,16 @@ public class PathFinder {
             }
         }
         return changed;
+    }
+
+    private void debugPrintBGPTables() {
+        for (Map.Entry<Router, Map<String, List<Router>>> entry : bgpTables.entrySet()) {
+            System.out.println("BGP table for router " + entry.getKey().getIpAddress() + ":");
+            for (Map.Entry<String, List<Router>> routeEntry : entry.getValue().entrySet()) {
+                System.out.println("  " + routeEntry.getKey() + " -> "
+                    + routeEntry.getValue().stream().map(Router::getIpAddress).collect(Collectors.joining(" -> ")));
+            }
+        }
     }
 
     /**
