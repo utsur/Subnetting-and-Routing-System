@@ -20,6 +20,17 @@ import java.util.Map;
 public class CommandHandler {
     private static final String ERROR_MESSAGE_UNKNOWN = "Error, Unknown command.";
     private static final String ERROR_NO_NETWORK = "Error, No network loaded. Use 'load network' first.";
+    private static final String LOAD_COMMAND = "load";
+    private static final String LIST_COMMAND = "list";
+    private static final String LIST_RANGE_COMMAND = "list range";
+    private static final String LIST_SYSTEMS_COMMAND = "list systems";
+    private static final String ADD_CONNECTION_COMMAND = "add connection";
+    private static final String REMOVE_CONNECTION_COMMAND = "remove connection";
+    private static final String ADD_COMPUTER_COMMAND = "add computer";
+    private static final String REMOVE_COMPUTER_COMMAND = "remove computer";
+    private static final String SEND_PACKET_COMMAND = "send packet";
+    private static final String  QUIT_COMMAND = "quit";
+
     private final Map<String, Command> commands;
     private final Network network;
 
@@ -30,16 +41,16 @@ public class CommandHandler {
     public CommandHandler(Network network) {
         this.network = network;
         commands = new HashMap<>();
-        commands.put("load", new LoadNetworkCommand(network));
-        commands.put("list", new ListSubnetsCommand(network));
-        commands.put("list range", new ListRangeCommand(network));
-        commands.put("list systems", new ListSystemsCommand(network));
-        commands.put("add connection", new AddConnectionCommand(network));
-        commands.put("remove connection", new RemoveConnectionCommand(network));
-        commands.put("add computer", new AddComputerCommand(network));
-        commands.put("remove computer", new RemoveComputerCommand(network));
-        commands.put("send packet", new SendPacketCommand(network));
-        commands.put("quit", new QuitCommand());
+        commands.put(LOAD_COMMAND, new LoadNetworkCommand(network));
+        commands.put(LIST_COMMAND, new ListSubnetsCommand(network));
+        commands.put(LIST_RANGE_COMMAND, new ListRangeCommand(network));
+        commands.put(LIST_SYSTEMS_COMMAND, new ListSystemsCommand(network));
+        commands.put(ADD_CONNECTION_COMMAND, new AddConnectionCommand(network));
+        commands.put(REMOVE_CONNECTION_COMMAND, new RemoveConnectionCommand(network));
+        commands.put(ADD_COMPUTER_COMMAND, new AddComputerCommand(network));
+        commands.put(REMOVE_COMPUTER_COMMAND, new RemoveComputerCommand(network));
+        commands.put(SEND_PACKET_COMMAND, new SendPacketCommand(network));
+        commands.put(QUIT_COMMAND, new QuitCommand());
     }
 
     /**

@@ -12,6 +12,8 @@ import edu.kit.kastel.model.Subnet;
 public class ListRangeCommand implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'list range <subnet>'";
     private static final String ERROR_SUBNET = "Error, Subnet not found.";
+    private static final String EMPTY_SPACE = " ";
+    private static final int ARGUMENT_LENGTH = 3;
     private final Network network;
 
     /**
@@ -24,7 +26,7 @@ public class ListRangeCommand implements Command {
 
     @Override
     public String execute(String[] args) {
-        if (args.length != 3) {
+        if (args.length != ARGUMENT_LENGTH) {
             return ERROR_FORMAT;
         }
         String subnetCidr = args[2];
@@ -34,6 +36,6 @@ public class ListRangeCommand implements Command {
         }
         String firstIp = subnet.getFirstIp();
         String lastIp = subnet.getLastIp();
-        return firstIp + " " + lastIp;
+        return firstIp + EMPTY_SPACE + lastIp;
     }
 }

@@ -16,6 +16,7 @@ public class Subnet {
     private static final int IP_PARTS = 4;
     private static final String IP_DELIMITER = "\\.";
     private static final String CIDR_DELIMITER = "/";
+    private static final String IP_DOT = ".";
     private final String cidr;
     private final Set<Systems> systems;
     private Router router;
@@ -85,7 +86,7 @@ public class Subnet {
             }
         }
 
-        return ipInts[0] + "." + ipInts[1] + "." + ipInts[2] + "." + ipInts[3];
+        return ipInts[0] + IP_DOT + ipInts[1] + IP_DOT + ipInts[2] + IP_DOT + ipInts[3];
     }
 
     /**

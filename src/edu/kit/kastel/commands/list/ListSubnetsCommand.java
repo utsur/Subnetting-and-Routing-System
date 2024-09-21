@@ -17,6 +17,7 @@ import java.util.List;
 public class ListSubnetsCommand implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'list subnets'";
     private static final String SUBNETS_STRING = "subnets";
+    private static final String EMPTY_SPACE = " ";
     private final Network network;
 
     /**
@@ -37,7 +38,7 @@ public class ListSubnetsCommand implements Command {
             subnetCidrs.add(subnet.getCidr());
         }
         Collections.sort(subnetCidrs, this::compareSubnetCidrs);
-        return String.join(" ", subnetCidrs);
+        return String.join(EMPTY_SPACE, subnetCidrs);
     }
 
     private int compareSubnetCidrs(String cidr1, String cidr2) {
