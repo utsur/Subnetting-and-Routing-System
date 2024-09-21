@@ -2,8 +2,6 @@ package edu.kit.kastel.util;
 
 import edu.kit.kastel.model.Connection;
 import edu.kit.kastel.model.Network;
-import edu.kit.kastel.model.Router;
-import edu.kit.kastel.model.Subnet;
 import edu.kit.kastel.model.Systems;
 
 import java.util.ArrayList;
@@ -12,153 +10,33 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * PathFinder class is responsible for finding the shortest path between two systems in a network.
- * It uses Dijkstra's algorithm to find the shortest path between systems in the same subnet and
- * BGP tables to find the shortest path between systems in different subnets.
+ * A helper class for finding paths in a network.
+ * This class uses the Dijkstra algorithm to find the shortest path between systems in the network.
  * @author utsur
  */
 public class PathFinder {
-    private static final int INTER_SUBNET_WEIGHT = 1;
     private final Network network;
-    private final Map<Router, Map<String, List<Router>>> bgpTables;
 
     /**
-     * Constructor for PathFinder class.
-     * @param network Network object representing the network.
+     * Creates a new pathfinder with the given network.
+     * @param network The network to find paths in.
      */
     public PathFinder(Network network) {
         this.network = network;
-        this.bgpTables = new HashMap<>();
-        initializeBGPTables();
-        exchangeBGPTables();
     }
 
     /**
-     * Initialize the BGP tables for the network.
-     */
-    public void initializeBGPTables() {
-        for (Subnet subnet : network.getSubnets()) {
-            Router router = subnet.getRouter();
-            if (router != null) {
-                Map<String, List<Router>> routingTable = new HashMap<>();
-                routingTable.put(subnet.getCidr(), new ArrayList<>(List.of(router)));
-                bgpTables.put(router, routingTable);
-            }
-        }
-    }
-
-    /**
-     * Update the BGP tables for a new connection between two routers.
-     * @param router1 the first router in the connection.
-     * @param router2 the second router in the connection.
-     */
-    public void updateBGPTablesForNewConnection(Router router1, Router router2) {
-        updateBGPTable(router1, router2);
-        updateBGPTable(router2, router1);
-        exchangeBGPTables();
-    }
-
-    /**
-     * Exchange BGP tables between routers in the network.
-     */
-    public void exchangeBGPTables() {
-        boolean changed;
-        do {
-            changed = false;
-            for (Router router : bgpTables.keySet()) {
-                for (Connection conn : network.getConnections()) {
-                    if (conn.getSystem1() instanceof Router && conn.getSystem2() instanceof Router) {
-                        Router neighbor = (Router) (conn.getSystem1() == router ? conn.getSystem2() : conn.getSystem1());
-                        changed |= updateBGPTable(router, neighbor);
-                    }
-                }
-            }
-        } while (changed);
-    }
-
-    private boolean updateBGPTable(Router router, Router neighbor) {
-        boolean changed = false;
-        Map<String, List<Router>> routerTable = bgpTables.get(router);
-        Map<String, List<Router>> neighborTable = bgpTables.get(neighbor);
-
-        if (routerTable == null) {
-            routerTable = new HashMap<>();
-            bgpTables.put(router, routerTable);
-        }
-
-        if (neighborTable == null) {
-            // If the neighbor doesn't have a BGP table, we can't update from it
-            return false;
-        }
-
-        for (Map.Entry<String, List<Router>> entry : neighborTable.entrySet()) {
-            String subnet = entry.getKey();
-            List<Router> path = new ArrayList<>(entry.getValue());
-
-            if (!routerTable.containsKey(subnet)) {
-                List<Router> newPath = new ArrayList<>();
-                newPath.add(neighbor);
-                newPath.addAll(path);
-                routerTable.put(subnet, newPath);
-                changed = true;
-            } else {
-                List<Router> currentPath = routerTable.get(subnet);
-                if (path.size() + 1 < currentPath.size() || (path.size() + 1 == currentPath.size()
-                    && neighbor.getIpAddress().compareTo(currentPath.get(0).getIpAddress()) < 0)) {
-
-                    List<Router> newPath = new ArrayList<>();
-                    newPath.add(neighbor);
-                    newPath.addAll(path);
-                    routerTable.put(subnet, newPath);
-                    changed = true;
-                }
-            }
-        }
-        return changed;
-    }
-
-    /**
-     * Initialize the BGP table for a router.
-     * @param router the router to initialize the BGP table for.
-     */
-    public void initializeBGPTableForRouter(Router router) {
-        if (!bgpTables.containsKey(router)) {
-            Map<String, List<Router>> routingTable = new HashMap<>();
-            routingTable.put(router.getSubnet().getCidr(), new ArrayList<>(List.of(router)));
-            bgpTables.put(router, routingTable);
-        }
-    }
-
-    /**
-     * Find the shortest path between two systems in the network.
-     * @param source the source system.
-     * @param destination the destination system.
-     * @return the shortest path between the source and destination systems.
+     * Finds the shortest path between the source and destination systems.
+     * This method uses the Dijkstra algorithm to find the shortest path.
+     * If no path is found, null is returned.
+     * @param source The source system.
+     * @param destination The destination system.
+     * @return The shortest path between the systems, or null if no path is found.
      */
     public List<Systems> findShortestPath(Systems source, Systems destination) {
-        if (source.getSubnet().equals(destination.getSubnet())) {
-            return findIntraSubnetPath(source, destination);
-        } else {
-            List<Systems> bgpPath = findInterSubnetPath(source, destination);
-            if (bgpPath != null) {
-                return bgpPath;
-            }
-            // Fallback to original Dijkstra if BGP path is not found
-            return findGlobalShortestPath(source, destination);
-        }
-    }
-
-    /**
-     * Find the shortest path between two systems in the same subnet.
-     * Uses Dijkstra's algorithm to find the shortest path.
-     * @param source the source system.
-     * @param destination the destination system.
-     * @return the shortest path between the source and destination systems.
-     */
-    private List<Systems> findIntraSubnetPath(Systems source, Systems destination) {
         Map<Systems, Integer> distances = new HashMap<>();
         Map<Systems, Systems> previousSystems = new HashMap<>();
-        List<Systems> unvisitedSystems = new ArrayList<>(source.getSubnet().getSystems());
+        List<Systems> unvisitedSystems = new ArrayList<>(network.getSystems().values());
 
         for (Systems system : unvisitedSystems) {
             distances.put(system, Integer.MAX_VALUE);
@@ -168,7 +46,7 @@ public class PathFinder {
         while (!unvisitedSystems.isEmpty()) {
             Systems current = getMinDistanceSystem(unvisitedSystems, distances);
             if (current == null) {
-                break;
+                break; // No path found
             }
             unvisitedSystems.remove(current);
 
@@ -176,10 +54,11 @@ public class PathFinder {
                 return reconstructPath(previousSystems, destination);
             }
 
-            for (Connection connection : getConnections(current)) {
+            List<Connection> connections = getConnections(current);
+            for (Connection connection : connections) {
                 Systems neighbor = connection.getOtherSystem(current);
                 if (unvisitedSystems.contains(neighbor)) {
-                    int weight = connection.getWeight() != null ? connection.getWeight() : INTER_SUBNET_WEIGHT;
+                    int weight = connection.getWeight() != null ? connection.getWeight() : 1;
                     int alternativeDistance = distances.get(current) + weight;
 
                     if (alternativeDistance < distances.get(neighbor)) {
@@ -190,40 +69,7 @@ public class PathFinder {
             }
         }
 
-        return null;
-    }
-
-    private List<Systems> findInterSubnetPath(Systems source, Systems destination) {
-        List<Systems> path = new ArrayList<>();
-        Router sourceRouter = source.getSubnet().getRouter();
-        Router destRouter = destination.getSubnet().getRouter();
-
-        if (sourceRouter == null || destRouter == null) {
-            return null;
-        }
-
-        path.addAll(findIntraSubnetPath(source, sourceRouter));
-
-        Map<String, List<Router>> sourceRouterTable = bgpTables.get(sourceRouter);
-        if (sourceRouterTable == null) {
-            return null;
-        }
-
-        List<Router> routerPath = sourceRouterTable.get(destination.getSubnet().getCidr());
-        if (routerPath == null) {
-            return null;
-        }
-
-        for (Router router : routerPath) {
-            path.add(router);
-            if (router == destRouter) {
-                break;
-            }
-        }
-
-        path.addAll(findIntraSubnetPath(destRouter, destination));
-
-        return path;
+        return null; // No path found
     }
 
     private Systems getMinDistanceSystem(List<Systems> systems, Map<Systems, Integer> distances) {
@@ -231,8 +77,8 @@ public class PathFinder {
         int minDistance = Integer.MAX_VALUE;
 
         for (Systems system : systems) {
-            Integer distance = distances.get(system);
-            if (distance != null && distance < minDistance) {
+            int distance = distances.get(system);
+            if (distance < minDistance) {
                 minDistance = distance;
                 minSystem = system;
             }
@@ -261,43 +107,5 @@ public class PathFinder {
         }
 
         return path;
-    }
-
-    private List<Systems> findGlobalShortestPath(Systems source, Systems destination) {
-        Map<Systems, Integer> distances = new HashMap<>();
-        Map<Systems, Systems> previousSystems = new HashMap<>();
-        List<Systems> unvisitedSystems = new ArrayList<>(network.getSystems().values());
-
-        for (Systems system : unvisitedSystems) {
-            distances.put(system, Integer.MAX_VALUE);
-        }
-        distances.put(source, 0);
-
-        while (!unvisitedSystems.isEmpty()) {
-            Systems current = getMinDistanceSystem(unvisitedSystems, distances);
-            if (current == null) {
-                break; // No path found
-            }
-            unvisitedSystems.remove(current);
-
-            if (current.equals(destination)) {
-                return reconstructPath(previousSystems, destination);
-            }
-
-            for (Connection connection : getConnections(current)) {
-                Systems neighbor = connection.getOtherSystem(current);
-                if (unvisitedSystems.contains(neighbor)) {
-                    int weight = connection.getWeight() != null ? connection.getWeight() : INTER_SUBNET_WEIGHT;
-                    int alternativeDistance = distances.get(current) + weight;
-
-                    if (alternativeDistance < distances.get(neighbor)) {
-                        distances.put(neighbor, alternativeDistance);
-                        previousSystems.put(neighbor, current);
-                    }
-                }
-            }
-        }
-
-        return null; // No path found
     }
 }

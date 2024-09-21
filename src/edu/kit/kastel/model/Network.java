@@ -1,7 +1,5 @@
 package edu.kit.kastel.model;
 
-import edu.kit.kastel.util.PathFinder;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,7 +18,6 @@ public class Network {
     private final Map<String, Systems> systemsByIp;
     private final Map<String, Systems> systemsByName;
     private final Set<Connection> connections;
-    private final PathFinder pathFinder;
 
     /**
      * Creates a new network.
@@ -32,7 +29,6 @@ public class Network {
         this.systemsByIp = new HashMap<>();
         this.systemsByName = new HashMap<>();
         this.connections = new HashSet<>();
-        this.pathFinder = new PathFinder(this);
     }
 
     /**
@@ -100,22 +96,6 @@ public class Network {
      */
     public void addConnection(Connection connection) {
         connections.add(connection);
-        if (connection.getSystem1() instanceof Router && connection.getSystem2() instanceof Router) {
-            Router router1 = (Router) connection.getSystem1();
-            Router router2 = (Router) connection.getSystem2();
-            pathFinder.initializeBGPTableForRouter(router1);
-            pathFinder.initializeBGPTableForRouter(router2);
-            pathFinder.updateBGPTablesForNewConnection(router1, router2);
-        }
-    }
-
-    /**
-     * Returns the path finder of the network.
-     * The path finder is used to find the shortest path between two systems.
-     * @return The path finder of the network.
-     */
-    public PathFinder getPathFinder() {
-        return this.pathFinder;
     }
 
     /**
