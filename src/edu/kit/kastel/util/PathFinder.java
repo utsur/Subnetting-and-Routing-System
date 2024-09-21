@@ -223,8 +223,8 @@ public class PathFinder {
             if (distance == null) {
                 continue; // Skip routers with no distance information
             }
-            if (minRouter == null || distance < minDistance ||
-                (distance.equals(minDistance) && router.getIpAddress().compareTo(minRouter.getIpAddress()) < 0)) {
+            if (minRouter == null || distance < minDistance
+                || (distance.equals(minDistance) && router.getIpAddress().compareTo(minRouter.getIpAddress()) < 0)) {
                 minDistance = distance;
                 minRouter = router;
             }
