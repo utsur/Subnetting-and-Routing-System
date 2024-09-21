@@ -89,19 +89,21 @@ public class PathFinder {
      * @return the shortest path between the source and destination systems.
      */
     public List<Systems> findShortestPath(Systems source, Systems destination) {
-        if (source == null || destination == null) {
-            System.out.println("Error, Invalid source or destination.");
-            return null;
-        }
         if (source.getSubnet().equals(destination.getSubnet())) {
             return findIntraSubnetPath(source, destination);
         } else {
-            return findInterSubnetPath(source, destination);
+            List<Systems> bgpPath = findInterSubnetPath(source, destination);
+            if (bgpPath != null) {
+                return bgpPath;
+            }
+            // Fallback to original Dijkstra if BGP path is not found
+            return findGlobalShortestPath(source, destination);
         }
     }
 
     /**
      * Find the shortest path between two systems in the same subnet.
+     * Uses Dijkstra's algorithm to find the shortest path.
      * @param source the source system.
      * @param destination the destination system.
      * @return the shortest path between the source and destination systems.
@@ -150,7 +152,6 @@ public class PathFinder {
         Router destRouter = destination.getSubnet().getRouter();
 
         if (sourceRouter == null || destRouter == null) {
-            System.out.println("Error, Source or destination subnet does not have a router.");
             return null;
         }
 
@@ -158,13 +159,11 @@ public class PathFinder {
 
         Map<String, List<Router>> sourceRouterTable = bgpTables.get(sourceRouter);
         if (sourceRouterTable == null) {
-            System.out.println("Error, No BGP table for source router.");
             return null;
         }
 
         List<Router> routerPath = sourceRouterTable.get(destination.getSubnet().getCidr());
         if (routerPath == null) {
-            System.out.println("Error, No BGP path found.");
             return null;
         }
         path.addAll(routerPath);
@@ -209,5 +208,43 @@ public class PathFinder {
         }
 
         return path;
+    }
+
+    private List<Systems> findGlobalShortestPath(Systems source, Systems destination) {
+        Map<Systems, Integer> distances = new HashMap<>();
+        Map<Systems, Systems> previousSystems = new HashMap<>();
+        List<Systems> unvisitedSystems = new ArrayList<>(network.getSystems().values());
+
+        for (Systems system : unvisitedSystems) {
+            distances.put(system, Integer.MAX_VALUE);
+        }
+        distances.put(source, 0);
+
+        while (!unvisitedSystems.isEmpty()) {
+            Systems current = getMinDistanceSystem(unvisitedSystems, distances);
+            if (current == null) {
+                break; // No path found
+            }
+            unvisitedSystems.remove(current);
+
+            if (current.equals(destination)) {
+                return reconstructPath(previousSystems, destination);
+            }
+
+            for (Connection connection : getConnections(current)) {
+                Systems neighbor = connection.getOtherSystem(current);
+                if (unvisitedSystems.contains(neighbor)) {
+                    int weight = connection.getWeight() != null ? connection.getWeight() : INTER_SUBNET_WEIGHT;
+                    int alternativeDistance = distances.get(current) + weight;
+
+                    if (alternativeDistance < distances.get(neighbor)) {
+                        distances.put(neighbor, alternativeDistance);
+                        previousSystems.put(neighbor, current);
+                    }
+                }
+            }
+        }
+
+        return null; // No path found
     }
 }
