@@ -32,6 +32,36 @@ public class Network {
     }
 
     /**
+     * Updates the BGP tables of all routers in the network.
+     * The BGP tables are updated based on the connections between the routers.
+     */
+    public void updateBGPTables() {
+        boolean changed;
+        do {
+            changed = false;
+            for (Systems system : systemsByIp.values()) {
+                if (system instanceof Router) {
+                    Router router = (Router) system;
+                    Map<String, List<String>> oldTable = router.getRoutingTable();
+
+                    for (Connection conn : connections) {
+                        if (conn.getSystem1() == router || conn.getSystem2() == router) {
+                            Systems neighbor = conn.getOtherSystem(router);
+                            if (neighbor instanceof Router) {
+                                router.updateRoutingTable(((Router) neighbor).getRoutingTable());
+                            }
+                        }
+                    }
+
+                    if (!oldTable.equals(router.getRoutingTable())) {
+                        changed = true;
+                    }
+                }
+            }
+        } while (changed);
+    }
+
+    /**
      * Adds a subnet to the network.
      * @param subnet The subnet to add.
      */
@@ -96,6 +126,7 @@ public class Network {
      */
     public void addConnection(Connection connection) {
         connections.add(connection);
+        updateBGPTables();
     }
 
     /**
@@ -124,6 +155,7 @@ public class Network {
             (conn.getSystem1() == system1 && conn.getSystem2() == system2)
                 || (conn.getSystem1() == system2 && conn.getSystem2() == system1)
         );
+        updateBGPTables();
     }
 
     /**

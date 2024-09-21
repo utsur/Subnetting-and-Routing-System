@@ -2,6 +2,7 @@ package edu.kit.kastel.util;
 
 import edu.kit.kastel.model.Connection;
 import edu.kit.kastel.model.Network;
+import edu.kit.kastel.model.Router;
 import edu.kit.kastel.model.Systems;
 
 import java.util.ArrayList;
@@ -11,10 +12,12 @@ import java.util.Map;
 
 /**
  * A helper class for finding paths in a network.
- * This class uses the Dijkstra algorithm to find the shortest path between systems in the network.
+ * This class uses the Dijkstra algorithm for intra-subnet routing and BGP tables for inter-subnet routing.
  * @author utsur
  */
 public class PathFinder {
+    private static final int INITIAL_DISTANCE = 0;
+    private static final int MAX_DISTANCE = Integer.MAX_VALUE;
     private final Network network;
 
     /**
@@ -27,40 +30,41 @@ public class PathFinder {
 
     /**
      * Finds the shortest path between the source and destination systems.
-     * This method uses the Dijkstra algorithm to find the shortest path.
      * If no path is found, null is returned.
      * @param source The source system.
      * @param destination The destination system.
      * @return The shortest path between the systems, or null if no path is found.
      */
     public List<Systems> findShortestPath(Systems source, Systems destination) {
+        if (source.getSubnet().equals(destination.getSubnet())) {
+            return findPathInSubnet(source, destination);
+        } else {
+            return findPathAcrossSubnets(source, destination);
+        }
+    }
+
+    private List<Systems> findPathInSubnet(Systems source, Systems destination) {
         Map<Systems, Integer> distances = new HashMap<>();
         Map<Systems, Systems> previousSystems = new HashMap<>();
-        List<Systems> unvisitedSystems = new ArrayList<>(network.getSystems().values());
+        List<Systems> unvisitedSystems = new ArrayList<>(source.getSubnet().getSystems());
 
         for (Systems system : unvisitedSystems) {
-            distances.put(system, Integer.MAX_VALUE);
+            distances.put(system, MAX_DISTANCE);
         }
-        distances.put(source, 0);
+        distances.put(source, INITIAL_DISTANCE);
 
         while (!unvisitedSystems.isEmpty()) {
             Systems current = getMinDistanceSystem(unvisitedSystems, distances);
-            if (current == null) {
-                break; // No path found
-            }
             unvisitedSystems.remove(current);
 
             if (current.equals(destination)) {
                 return reconstructPath(previousSystems, destination);
             }
 
-            List<Connection> connections = getConnections(current);
-            for (Connection connection : connections) {
+            for (Connection connection : getConnections(current)) {
                 Systems neighbor = connection.getOtherSystem(current);
-                if (unvisitedSystems.contains(neighbor)) {
-                    int weight = connection.getWeight() != null ? connection.getWeight() : 1;
-                    int alternativeDistance = distances.get(current) + weight;
-
+                if (neighbor.getSubnet().equals(source.getSubnet())) {
+                    int alternativeDistance = distances.get(current) + connection.getWeight();
                     if (alternativeDistance < distances.get(neighbor)) {
                         distances.put(neighbor, alternativeDistance);
                         previousSystems.put(neighbor, current);
@@ -72,9 +76,39 @@ public class PathFinder {
         return null; // No path found
     }
 
+    private List<Systems> findPathAcrossSubnets(Systems source, Systems destination) {
+        List<Systems> path = new ArrayList<>();
+
+        // Find path from source to source subnets router
+        List<Systems> sourceToRouter = findPathInSubnet(source, source.getSubnet().getRouter());
+        if (sourceToRouter == null) {
+            return null;
+        }
+        path.addAll(sourceToRouter);
+        // Find path between routers using BGP tables.
+        Router sourceRouter = source.getSubnet().getRouter();
+        List<String> routerPath = sourceRouter.getRoutingTable().get(destination.getSubnet().getCidr());
+        if (routerPath == null) {
+            return null;
+        }
+
+        for (int i = 1; i < routerPath.size(); i++) {
+            Router router = (Router) network.getSystemByIp(routerPath.get(i));
+            path.add(router);
+        }
+        // Find path from destination subnets router to destination.
+        List<Systems> routerToDestination = findPathInSubnet(destination.getSubnet().getRouter(), destination);
+        if (routerToDestination == null) {
+            return null;
+        }
+        path.addAll(routerToDestination.subList(1, routerToDestination.size())); // Exclude the router as it's already in the path.
+
+        return path;
+    }
+
     private Systems getMinDistanceSystem(List<Systems> systems, Map<Systems, Integer> distances) {
         Systems minSystem = null;
-        int minDistance = Integer.MAX_VALUE;
+        int minDistance = MAX_DISTANCE;
 
         for (Systems system : systems) {
             int distance = distances.get(system);
