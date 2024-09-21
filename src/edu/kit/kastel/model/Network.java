@@ -101,8 +101,21 @@ public class Network {
     public void addConnection(Connection connection) {
         connections.add(connection);
         if (connection.getSystem1() instanceof Router && connection.getSystem2() instanceof Router) {
-            pathFinder.updateBGPTablesForNewConnection((Router) connection.getSystem1(), (Router) connection.getSystem2());
+            Router router1 = (Router) connection.getSystem1();
+            Router router2 = (Router) connection.getSystem2();
+            pathFinder.initializeBGPTableForRouter(router1);
+            pathFinder.initializeBGPTableForRouter(router2);
+            pathFinder.updateBGPTablesForNewConnection(router1, router2);
         }
+    }
+
+    /**
+     * Returns the path finder of the network.
+     * The path finder is used to find the shortest path between two systems.
+     * @return The path finder of the network.
+     */
+    public PathFinder getPathFinder() {
+        return this.pathFinder;
     }
 
     /**

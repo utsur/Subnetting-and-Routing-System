@@ -33,7 +33,10 @@ public class PathFinder {
         exchangeBGPTables();
     }
 
-    private void initializeBGPTables() {
+    /**
+     * Initialize the BGP tables for the network.
+     */
+    public void initializeBGPTables() {
         for (Subnet subnet : network.getSubnets()) {
             Router router = subnet.getRouter();
             if (router != null) {
@@ -78,6 +81,16 @@ public class PathFinder {
         Map<String, List<Router>> routerTable = bgpTables.get(router);
         Map<String, List<Router>> neighborTable = bgpTables.get(neighbor);
 
+        if (routerTable == null) {
+            routerTable = new HashMap<>();
+            bgpTables.put(router, routerTable);
+        }
+
+        if (neighborTable == null) {
+            // If the neighbor doesn't have a BGP table, we can't update from it
+            return false;
+        }
+
         for (Map.Entry<String, List<Router>> entry : neighborTable.entrySet()) {
             String subnet = entry.getKey();
             List<Router> path = new ArrayList<>(entry.getValue());
@@ -102,6 +115,18 @@ public class PathFinder {
             }
         }
         return changed;
+    }
+
+    /**
+     * Initialize the BGP table for a router.
+     * @param router the router to initialize the BGP table for.
+     */
+    public void initializeBGPTableForRouter(Router router) {
+        if (!bgpTables.containsKey(router)) {
+            Map<String, List<Router>> routingTable = new HashMap<>();
+            routingTable.put(router.getSubnet().getCidr(), new ArrayList<>(List.of(router)));
+            bgpTables.put(router, routingTable);
+        }
     }
 
     /**

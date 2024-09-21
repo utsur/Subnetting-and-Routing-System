@@ -48,6 +48,10 @@ public class LoadNetworkCommand implements Command {
         }
         // Actualize the network with the loaded data.
         network.updateFrom(loadedNetwork);
+
+        // Re-initialize BGP tables and exchange them
+        network.getPathFinder().initializeBGPTables();
+        network.getPathFinder().exchangeBGPTables();
         return null;
     }
 }
