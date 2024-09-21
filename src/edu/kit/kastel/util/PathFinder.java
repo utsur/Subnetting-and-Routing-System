@@ -3,6 +3,7 @@ package edu.kit.kastel.util;
 import edu.kit.kastel.model.Connection;
 import edu.kit.kastel.model.Network;
 import edu.kit.kastel.model.Router;
+
 import edu.kit.kastel.model.Subnet;
 import edu.kit.kastel.model.Systems;
 
@@ -19,7 +20,7 @@ import java.util.Map;
 public class PathFinder {
     private static final int INTER_SUBNET_WEIGHT = 1;
     private final Network network;
-    private final Map<Router, BGPRouter> bgpRouters;
+    private final Map<Router, Map<String, List<Router>>> bgpTables;
 
     /**
      * Creates a new pathfinder with the given network.
@@ -27,17 +28,17 @@ public class PathFinder {
      */
     public PathFinder(Network network) {
         this.network = network;
-        this.bgpRouters = new HashMap<>();
-        initializeBGPRouters();
+        this.bgpTables = new HashMap<>();
+        initializeBGPTables();
         exchangeBGPTables();
     }
 
-    private void initializeBGPRouters() {
+    private void initializeBGPTables() {
         for (Subnet subnet : network.getSubnets()) {
             Router router = subnet.getRouter();
-            if (router != null) {
-                bgpRouters.put(router, new BGPRouter(router));
-            }
+            Map<String, List<Router>> routingTable = new HashMap<>();
+            routingTable.put(subnet.getCidr(), List.of(router));
+            bgpTables.put(router, routingTable);
         }
     }
 
@@ -49,36 +50,44 @@ public class PathFinder {
                 if (conn.getSystem1() instanceof Router && conn.getSystem2() instanceof Router) {
                     Router router1 = (Router) conn.getSystem1();
                     Router router2 = (Router) conn.getSystem2();
-                    BGPRouter bgpRouter1 = bgpRouters.get(router1);
-                    BGPRouter bgpRouter2 = bgpRouters.get(router2);
-
-                    if (bgpRouter1 != null && bgpRouter2 != null) {
-                        int oldSize1 = bgpRouter1.getRoutingTable().size();
-                        int oldSize2 = bgpRouter2.getRoutingTable().size();
-
-                        bgpRouter1.updateRoutingTable(bgpRouter2);
-                        bgpRouter2.updateRoutingTable(bgpRouter1);
-
-                        if (bgpRouter1.getRoutingTable().size() > oldSize1 || bgpRouter2.getRoutingTable().size() > oldSize2) {
-                            changed = true;
-                        }
-                    }
+                    changed |= updateBGPTable(router1, router2);
+                    changed |= updateBGPTable(router2, router1);
                 }
             }
         } while (changed);
     }
 
+    private boolean updateBGPTable(Router router, Router neighbor) {
+        boolean changed = false;
+        Map<String, List<Router>> routerTable = bgpTables.get(router);
+        Map<String, List<Router>> neighborTable = bgpTables.get(neighbor);
+
+        for (Map.Entry<String, List<Router>> entry : neighborTable.entrySet()) {
+            String subnet = entry.getKey();
+            List<Router> path = entry.getValue();
+
+            if (!routerTable.containsKey(subnet) || (path.size() + 1 < routerTable.get(subnet).size())
+                || (path.size() + 1 == routerTable.get(subnet).size()
+                && neighbor.getIpAddress().compareTo(routerTable.get(subnet).get(0).getIpAddress()) < 0)) {
+
+                List<Router> newPath = new ArrayList<>();
+                newPath.add(neighbor);
+                newPath.addAll(path);
+                routerTable.put(subnet, newPath);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
     /**
-     * Finds the shortest path between the source and destination systems.
+     * Finds the shortest path between two systems in the network.
+     * This method uses the BGP for inter-subnet routing and Dijkstra algorithm for intra-subnet routing.
      * @param source The source system.
      * @param destination The destination system.
-     * @return The shortest path between the systems, or null if no path is found.
+     * @return The shortest path between the source and destination systems.
      */
     public List<Systems> findShortestPath(Systems source, Systems destination) {
-        if (source == null || destination == null) {
-            System.out.println("Error, Invalid source or destination.");
-            return null;
-        }
         if (source.getSubnet().equals(destination.getSubnet())) {
             return findIntraSubnetPath(source, destination);
         } else {
@@ -121,7 +130,7 @@ public class PathFinder {
             }
         }
 
-        return null;
+        return null; // no path found
     }
 
     private List<Systems> findInterSubnetPath(Systems source, Systems destination) {
@@ -130,7 +139,7 @@ public class PathFinder {
         Router destRouter = destination.getSubnet().getRouter();
 
         if (sourceRouter == null || destRouter == null) {
-            System.out.println("Error, Invalid source or destination router.");
+            System.out.println("Error, Source or destination subnet does not have a router.");
             return null;
         }
 
@@ -141,18 +150,17 @@ public class PathFinder {
         }
         path.addAll(pathToSourceRouter);
 
-        BGPRouter bgpSourceRouter = bgpRouters.get(sourceRouter);
-        if (bgpSourceRouter == null) {
-            System.out.println("Error, BGP router not found for source router.");
+        Map<String, List<Router>> sourceRouterTable = bgpTables.get(sourceRouter);
+        if (sourceRouterTable == null) {
+            System.out.println("Error, No BGP table for source router.");
             return null;
         }
 
-        List<Router> routerPath = bgpSourceRouter.getPathTo(destination.getSubnet().getCidr());
+        List<Router> routerPath = sourceRouterTable.get(destination.getSubnet().getCidr());
         if (routerPath == null) {
             System.out.println("Error, No BGP path found.");
             return null;
         }
-
         path.addAll(routerPath);
 
         List<Systems> pathFromDestRouter = findIntraSubnetPath(destRouter, destination);
