@@ -130,10 +130,23 @@ public class PathFinder {
         Router sourceRouter = source.getSubnet().getRouter();
         Router destRouter = destination.getSubnet().getRouter();
 
-        path.addAll(findIntraSubnetPath(source, sourceRouter));
+        List<Systems> pathToSourceRouter = findIntraSubnetPath(source, sourceRouter);
+        if (pathToSourceRouter == null) {
+            return null; // No path to source router
+        }
+        path.addAll(pathToSourceRouter);
+
         List<Router> routerPath = findShortestRouterPath(sourceRouter, destRouter);
-        path.addAll(new ArrayList<>(routerPath)); // This line converts Router list to Systems list
-        path.addAll(findIntraSubnetPath(destRouter, destination));
+        if (routerPath == null) {
+            return null; // No path between routers
+        }
+        path.addAll(new ArrayList<>(routerPath));
+
+        List<Systems> pathFromDestRouter = findIntraSubnetPath(destRouter, destination);
+        if (pathFromDestRouter == null) {
+            return null; // No path from dest router to destination
+        }
+        path.addAll(pathFromDestRouter);
 
         return path;
     }
@@ -176,10 +189,13 @@ public class PathFinder {
 
         while (!unvisited.isEmpty()) {
             Router current = getMinDistanceRouter(unvisited, distances);
+            if (current == null) {
+                break; // No more reachable routers
+            }
             unvisited.remove(current);
 
             if (current == destination) {
-                break;
+                return reconstructRouterPath(source, destination, previousRouter);
             }
 
             for (Connection conn : network.getConnections()) {
@@ -196,20 +212,24 @@ public class PathFinder {
             }
         }
 
-        return reconstructRouterPath(source, destination, previousRouter);
+        return null; // No path found
     }
 
     private Router getMinDistanceRouter(List<Router> routers, Map<Router, Integer> distances) {
         Router minRouter = null;
         int minDistance = Integer.MAX_VALUE;
         for (Router router : routers) {
-            int distance = distances.get(router);
-            if (distance < minDistance || (distance == minDistance && router.getIpAddress().compareTo(minRouter.getIpAddress()) < 0)) {
+            Integer distance = distances.get(router);
+            if (distance == null) {
+                continue; // Skip routers with no distance information
+            }
+            if (minRouter == null || distance < minDistance ||
+                (distance.equals(minDistance) && router.getIpAddress().compareTo(minRouter.getIpAddress()) < 0)) {
                 minDistance = distance;
                 minRouter = router;
             }
         }
-        return minRouter;
+        return minRouter; // This could still be null if no valid router is found
     }
 
     private List<Systems> reconstructPath(Map<Systems, Systems> previousSystems, Systems destination) {
