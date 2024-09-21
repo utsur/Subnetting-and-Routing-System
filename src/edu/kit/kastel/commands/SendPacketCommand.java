@@ -54,6 +54,8 @@ public class SendPacketCommand implements Command {
         if (source == null || destination == null) {
             return ERROR_INVALID_IP;
         }
+        // Exchange BGP tables to get the latest routing information.
+        pathFinder.exchangeBGPTables();
 
         List<Systems> path = pathFinder.findShortestPath(source, destination);
 

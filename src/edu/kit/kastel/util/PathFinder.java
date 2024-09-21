@@ -44,7 +44,21 @@ public class PathFinder {
         }
     }
 
-    private void exchangeBGPTables() {
+    /**
+     * Update the BGP tables for a new connection between two routers.
+     * @param router1 the first router in the connection.
+     * @param router2 the second router in the connection.
+     */
+    public void updateBGPTablesForNewConnection(Router router1, Router router2) {
+        updateBGPTable(router1, router2);
+        updateBGPTable(router2, router1);
+        exchangeBGPTables();
+    }
+
+    /**
+     * Exchange BGP tables between routers in the network.
+     */
+    public void exchangeBGPTables() {
         boolean changed;
         do {
             changed = false;

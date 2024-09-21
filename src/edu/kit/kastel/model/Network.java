@@ -1,5 +1,7 @@
 package edu.kit.kastel.model;
 
+import edu.kit.kastel.util.PathFinder;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,6 +20,7 @@ public class Network {
     private final Map<String, Systems> systemsByIp;
     private final Map<String, Systems> systemsByName;
     private final Set<Connection> connections;
+    private final PathFinder pathFinder;
 
     /**
      * Creates a new network.
@@ -29,6 +32,7 @@ public class Network {
         this.systemsByIp = new HashMap<>();
         this.systemsByName = new HashMap<>();
         this.connections = new HashSet<>();
+        this.pathFinder = new PathFinder(this);
     }
 
     /**
@@ -96,6 +100,9 @@ public class Network {
      */
     public void addConnection(Connection connection) {
         connections.add(connection);
+        if (connection.getSystem1() instanceof Router && connection.getSystem2() instanceof Router) {
+            pathFinder.updateBGPTablesForNewConnection((Router) connection.getSystem1(), (Router) connection.getSystem2());
+        }
     }
 
     /**

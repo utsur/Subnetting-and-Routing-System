@@ -3,6 +3,7 @@ package edu.kit.kastel.commands.connection;
 import edu.kit.kastel.commands.Command;
 import edu.kit.kastel.model.Network;
 import edu.kit.kastel.model.Systems;
+import edu.kit.kastel.util.PathFinder;
 
 /**
  * This class represents the remove connection command.
@@ -15,6 +16,7 @@ public class RemoveConnectionCommand implements Command {
     private static final String ERROR_NO_CONNECTION = "Error, No connection exists between the specified systems.";
     private static final int EXPECTED_ARGS = 4;
     private final Network network;
+    private final PathFinder pathFinder;
 
     /**
      * Creates a new remove connection command.
@@ -22,6 +24,7 @@ public class RemoveConnectionCommand implements Command {
      */
     public RemoveConnectionCommand(Network network) {
         this.network = network;
+        this.pathFinder = new PathFinder(network);
     }
 
     @Override
@@ -45,6 +48,7 @@ public class RemoveConnectionCommand implements Command {
         }
 
         network.removeConnection(system1, system2);
+        pathFinder.exchangeBGPTables();
         return null;
     }
 }
