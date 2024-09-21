@@ -68,15 +68,23 @@ public class PathFinder {
             String subnet = entry.getKey();
             List<Router> path = new ArrayList<>(entry.getValue());
 
-            if (!routerTable.containsKey(subnet) || (path.size() + 1 < routerTable.get(subnet).size())
-                || (path.size() + 1 == routerTable.get(subnet).size()
-                && neighbor.getIpAddress().compareTo(routerTable.get(subnet).get(0).getIpAddress()) < 0)) {
-
+            if (!routerTable.containsKey(subnet)) {
                 List<Router> newPath = new ArrayList<>();
                 newPath.add(neighbor);
                 newPath.addAll(path);
                 routerTable.put(subnet, newPath);
                 changed = true;
+            } else {
+                List<Router> currentPath = routerTable.get(subnet);
+                if (path.size() + 1 < currentPath.size() || (path.size() + 1 == currentPath.size()
+                    && neighbor.getIpAddress().compareTo(currentPath.get(0).getIpAddress()) < 0)) {
+
+                    List<Router> newPath = new ArrayList<>();
+                    newPath.add(neighbor);
+                    newPath.addAll(path);
+                    routerTable.put(subnet, newPath);
+                    changed = true;
+                }
             }
         }
         return changed;
@@ -252,5 +260,18 @@ public class PathFinder {
         }
 
         return null; // No path found
+    }
+
+    public void printBGPTables() {
+        for (Map.Entry<Router, Map<String, List<Router>>> entry : bgpTables.entrySet()) {
+            System.out.println("Router: " + entry.getKey().getIpAddress());
+            for (Map.Entry<String, List<Router>> routeEntry : entry.getValue().entrySet()) {
+                System.out.print("  " + routeEntry.getKey() + ": ");
+                for (Router router : routeEntry.getValue()) {
+                    System.out.print(router.getIpAddress() + " ");
+                }
+                System.out.println();
+            }
+        }
     }
 }
