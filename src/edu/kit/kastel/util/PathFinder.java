@@ -3,7 +3,6 @@ package edu.kit.kastel.util;
 import edu.kit.kastel.model.Connection;
 import edu.kit.kastel.model.Network;
 import edu.kit.kastel.model.Router;
-
 import edu.kit.kastel.model.Subnet;
 import edu.kit.kastel.model.Systems;
 
@@ -11,35 +10,27 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
- * A helper class for finding paths in a network.
- * This class uses the BGP for inter-subnet routing and Dijkstra algorithm for intra-subnet routing.
+ * PathFinder class is responsible for finding the shortest path between two systems in a network.
+ * It uses Dijkstra's algorithm to find the shortest path between systems in the same subnet and
+ * BGP tables to find the shortest path between systems in different subnets.
  * @author utsur
  */
 public class PathFinder {
     private static final int INTER_SUBNET_WEIGHT = 1;
-    private static final String ERROR_NO_ROUTER = "Error, Source or destination subnet does not have a router.";
-    private static final String ERROR_NO_PATH_TO_ROUTER = "Error, No path to source router.";
-    private static final String ERROR_NO_BGP_TABLE = "Error, No BGP table for source router.";
-    private static final String ERROR_NO_BGP_PATH = "Error, No BGP path found.";
-    private static final String ERROR_NO_PATH_FROM_ROUTER = "Error, No path from destination router to destination.";
-
     private final Network network;
     private final Map<Router, Map<String, List<Router>>> bgpTables;
 
     /**
-     * Creates a new pathfinder with the given network.
-     * @param network The network to find paths in.
+     * Constructor for PathFinder class.
+     * @param network Network object representing the network.
      */
     public PathFinder(Network network) {
-
         this.network = network;
         this.bgpTables = new HashMap<>();
         initializeBGPTables();
         exchangeBGPTables();
-        debugPrintBGPTables(); // Temporäre Debugging-Ausgabe
     }
 
     private void initializeBGPTables() {
@@ -47,10 +38,8 @@ public class PathFinder {
             Router router = subnet.getRouter();
             if (router != null) {
                 Map<String, List<Router>> routingTable = new HashMap<>();
-                routingTable.put(subnet.getCidr(), List.of(router));
+                routingTable.put(subnet.getCidr(), new ArrayList<>(List.of(router)));
                 bgpTables.put(router, routingTable);
-            } else {
-                System.out.println("Warning: Subnet " + subnet.getCidr() + " has no router.");
             }
         }
     }
@@ -75,17 +64,12 @@ public class PathFinder {
         Map<String, List<Router>> routerTable = bgpTables.get(router);
         Map<String, List<Router>> neighborTable = bgpTables.get(neighbor);
 
-        if (routerTable == null || neighborTable == null) {
-            System.out.println("Warning: BGP table missing for router " + router.getIpAddress() + " or " + neighbor.getIpAddress());
-            return false;
-        }
-
         for (Map.Entry<String, List<Router>> entry : neighborTable.entrySet()) {
             String subnet = entry.getKey();
-            List<Router> path = entry.getValue();
+            List<Router> path = new ArrayList<>(entry.getValue());
 
-            if (!routerTable.containsKey(subnet)
-                || (path.size() + 1 < routerTable.get(subnet).size()) || (path.size() + 1 == routerTable.get(subnet).size()
+            if (!routerTable.containsKey(subnet) || (path.size() + 1 < routerTable.get(subnet).size())
+                || (path.size() + 1 == routerTable.get(subnet).size()
                 && neighbor.getIpAddress().compareTo(routerTable.get(subnet).get(0).getIpAddress()) < 0)) {
 
                 List<Router> newPath = new ArrayList<>();
@@ -98,24 +82,17 @@ public class PathFinder {
         return changed;
     }
 
-    private void debugPrintBGPTables() {
-        for (Map.Entry<Router, Map<String, List<Router>>> entry : bgpTables.entrySet()) {
-            System.out.println("BGP table for router " + entry.getKey().getIpAddress() + ":");
-            for (Map.Entry<String, List<Router>> routeEntry : entry.getValue().entrySet()) {
-                System.out.println("  " + routeEntry.getKey() + " -> "
-                    + routeEntry.getValue().stream().map(Router::getIpAddress).collect(Collectors.joining(" -> ")));
-            }
-        }
-    }
-
     /**
-     * Finds the shortest path between two systems in the network.
-     * This method uses the BGP for inter-subnet routing and Dijkstra algorithm for intra-subnet routing.
-     * @param source The source system.
-     * @param destination The destination system.
-     * @return The shortest path between the source and destination systems.
+     * Find the shortest path between two systems in the network.
+     * @param source the source system.
+     * @param destination the destination system.
+     * @return the shortest path between the source and destination systems.
      */
     public List<Systems> findShortestPath(Systems source, Systems destination) {
+        if (source == null || destination == null) {
+            System.out.println("Error, Invalid source or destination.");
+            return null;
+        }
         if (source.getSubnet().equals(destination.getSubnet())) {
             return findIntraSubnetPath(source, destination);
         } else {
@@ -123,6 +100,12 @@ public class PathFinder {
         }
     }
 
+    /**
+     * Find the shortest path between two systems in the same subnet.
+     * @param source the source system.
+     * @param destination the destination system.
+     * @return the shortest path between the source and destination systems.
+     */
     private List<Systems> findIntraSubnetPath(Systems source, Systems destination) {
         Map<Systems, Integer> distances = new HashMap<>();
         Map<Systems, Systems> previousSystems = new HashMap<>();
@@ -158,7 +141,7 @@ public class PathFinder {
             }
         }
 
-        return null; // no path found
+        return null;
     }
 
     private List<Systems> findInterSubnetPath(Systems source, Systems destination) {
@@ -171,12 +154,7 @@ public class PathFinder {
             return null;
         }
 
-        List<Systems> pathToSourceRouter = findIntraSubnetPath(source, sourceRouter);
-        if (pathToSourceRouter == null) {
-            System.out.println("Error, No path to source router.");
-            return null;
-        }
-        path.addAll(pathToSourceRouter);
+        path.addAll(findIntraSubnetPath(source, sourceRouter));
 
         Map<String, List<Router>> sourceRouterTable = bgpTables.get(sourceRouter);
         if (sourceRouterTable == null) {
@@ -191,12 +169,7 @@ public class PathFinder {
         }
         path.addAll(routerPath);
 
-        List<Systems> pathFromDestRouter = findIntraSubnetPath(destRouter, destination);
-        if (pathFromDestRouter == null) {
-            System.out.println("Error, No path from destination router to destination.");
-            return null;
-        }
-        path.addAll(pathFromDestRouter);
+        path.addAll(findIntraSubnetPath(destRouter, destination));
 
         return path;
     }
