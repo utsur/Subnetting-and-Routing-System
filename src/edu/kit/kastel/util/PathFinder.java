@@ -48,12 +48,12 @@ public class PathFinder {
         boolean changed;
         do {
             changed = false;
-            for (Connection conn : network.getConnections()) {
-                if (conn.getSystem1() instanceof Router && conn.getSystem2() instanceof Router) {
-                    Router router1 = (Router) conn.getSystem1();
-                    Router router2 = (Router) conn.getSystem2();
-                    changed |= updateBGPTable(router1, router2);
-                    changed |= updateBGPTable(router2, router1);
+            for (Router router : bgpTables.keySet()) {
+                for (Connection conn : network.getConnections()) {
+                    if (conn.getSystem1() instanceof Router && conn.getSystem2() instanceof Router) {
+                        Router neighbor = (Router) (conn.getSystem1() == router ? conn.getSystem2() : conn.getSystem1());
+                        changed |= updateBGPTable(router, neighbor);
+                    }
                 }
             }
         } while (changed);
@@ -166,7 +166,13 @@ public class PathFinder {
         if (routerPath == null) {
             return null;
         }
-        path.addAll(routerPath);
+
+        for (Router router : routerPath) {
+            path.add(router);
+            if (router == destRouter) {
+                break;
+            }
+        }
 
         path.addAll(findIntraSubnetPath(destRouter, destination));
 
