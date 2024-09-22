@@ -13,9 +13,13 @@ import java.util.Set;
 public class Subnet {
     private static final int BITS_IN_BYTE = 8;
     private static final int BYTES_IN_IP = 4;
+    private static final int BITS_IN_IP = BYTES_IN_IP * BITS_IN_BYTE;
     private static final String IP_DELIMITER = "\\.";
     private static final String CIDR_DELIMITER = "/";
     private static final String IP_DOT = ".";
+    private static final int LAST_OCTET_INDEX = 3;
+    private static final int MAX_OCTET_VALUE = 255;
+    private static final long ALL_BITS_SET = 0xffffffffL;
     private final String cidr;
     private final Set<Systems> systems;
     private Router router;
@@ -66,8 +70,8 @@ public class Subnet {
         String networkAddress = parts[0];
         String[] octets = networkAddress.split(IP_DELIMITER);
         // Increment the last octet by 1 to get the first usable host IP
-        int lastOctet = Integer.parseInt(octets[3]);
-        octets[3] = String.valueOf(lastOctet + 1);
+        int lastOctet = Integer.parseInt(octets[LAST_OCTET_INDEX]);
+        octets[LAST_OCTET_INDEX] = String.valueOf(lastOctet + 1);
 
         return String.join(IP_DOT, octets);
     }
@@ -98,7 +102,7 @@ public class Subnet {
         int hostBits = BYTES_IN_IP * BITS_IN_BYTE - prefixLength;
         for (int i = BYTES_IN_IP - 1; i >= 0; i--) {
             if (hostBits >= BITS_IN_BYTE) {
-                ipInts[i] = 255;
+                ipInts[i] = MAX_OCTET_VALUE;
                 hostBits -= BITS_IN_BYTE;
             } else if (hostBits > 0) {
                 ipInts[i] |= (1 << hostBits) - 1;
@@ -108,7 +112,7 @@ public class Subnet {
             }
         }
 
-        return ipInts[0] + IP_DOT + ipInts[1] + IP_DOT + ipInts[2] + IP_DOT + ipInts[3];
+        return ipInts[0] + IP_DOT + ipInts[1] + IP_DOT + ipInts[2] + IP_DOT + ipInts[LAST_OCTET_INDEX];
     }
 
     /**
@@ -132,7 +136,7 @@ public class Subnet {
         long networkIp = ipToLong(networkAddress);
         long inputIp = ipToLong(ip);
 
-        long mask = 0xffffffffL << (32 - prefixLength);
+        long mask = ALL_BITS_SET << (BITS_IN_IP - prefixLength);
 
         return (networkIp & mask) == (inputIp & mask);
     }
@@ -140,8 +144,8 @@ public class Subnet {
     private long ipToLong(String ip) {
         String[] octets = ip.split(IP_DELIMITER); // Split the IP address into octets.
         long result = 0;
-        for (int i = 0; i < 4; i++) {
-            result <<= 8;
+        for (int i = 0; i < BYTES_IN_IP; i++) {
+            result <<= BITS_IN_BYTE;
             result |= Long.parseLong(octets[i]);
         }
         return result;
