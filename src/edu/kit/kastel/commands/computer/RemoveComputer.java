@@ -19,6 +19,7 @@ public class RemoveComputer extends AbstractComputerCommand {
     private static final String ERROR_NOT_COMPUTER = "Error, The specified IP does not belong to a computer.";
     private static final String ERROR_NOT_IN_SUBNET = "Error, The specified IP does not exist in the given subnet.";
     private static final String REMOVE = "remove";
+    private static final int NUMBER_OF_ARGUMENTS = 3;
 
     /**
      * Creates a new RemoveComputer with the given network.
@@ -35,7 +36,7 @@ public class RemoveComputer extends AbstractComputerCommand {
             return String.format(ERROR_FORMAT, REMOVE);
         }
 
-        String ip = args[3];
+        String ip = args[NUMBER_OF_ARGUMENTS];
 
         Systems system = network.getSystemByIp(ip);
         if (system == null) {

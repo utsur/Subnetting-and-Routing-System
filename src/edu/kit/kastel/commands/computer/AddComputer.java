@@ -16,6 +16,7 @@ public class AddComputer extends AbstractComputerCommand {
     private static final String ADD = "add";
     private static final String DOT = ".";
     private static final String UNDERLINE = "_";
+    private static final int NUMBER_OF_ARGUMENTS = 3;
 
     /**
      * Creates a new AddComputer with the given network.
@@ -32,7 +33,7 @@ public class AddComputer extends AbstractComputerCommand {
             return String.format(ERROR_FORMAT, ADD);
         }
 
-        String ip = args[3];
+        String ip = args[NUMBER_OF_ARGUMENTS];
 
         if (network.getSystemByIp(ip) != null) {
             return ERROR_IP_EXISTS;
