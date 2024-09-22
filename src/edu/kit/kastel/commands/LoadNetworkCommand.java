@@ -34,21 +34,16 @@ public class LoadNetworkCommand implements Command {
 
         List<String> fileContent = FileHelper.readAllLines(path);
         if (fileContent.isEmpty()) {
-            return null; // FileHelper already printed the error message.
-        }
-        // print the network file content.
-        for (String line : fileContent) {
-            System.out.println(line);
-        }
-        // Loading and validation of the network.
-        Network loadedNetwork = loader.loadNetwork(path);
-        if (loadedNetwork == null) {
-            return null; // Error messages are already printed by the loader.
+            return null; // Error message already printed in readAllLines.
         }
 
-        // Actualisation of the network after loading.
+        Network loadedNetwork = loader.loadNetwork(path);
+        if (loadedNetwork == null) {
+            return null; // Error message already printed in loadNetwork.
+        }
+
         network.updateFrom(loadedNetwork);
-        network.updateBGPTables(); // Initialisation of the BGP tables.
+        network.updateBGPTables();
         return null;
     }
 }

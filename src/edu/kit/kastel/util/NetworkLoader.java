@@ -40,7 +40,6 @@ public class NetworkLoader {
         Network network = new Network();
         List<String> lines = FileHelper.readAllLines(filePath);
         Subnet currentSubnet = null;
-        boolean hasError = false;
 
         for (String originalLine : lines) {
             String line = originalLine.trim();
@@ -48,23 +47,30 @@ public class NetworkLoader {
                 continue;
             }
 
+            System.out.println(originalLine);  // Print the original line
+
             if (line.startsWith(SUBGRAPH_PREFIX)) {
                 currentSubnet = parseSubnet(line, network);
+                if (currentSubnet == null) {
+                    return null;  // Error message already printed in parseSubnet
+                }
             } else if (line.contains(SYSTEM_DELIMITER)) {
                 if (currentSubnet == null) {
                     System.out.println(ERROR_OUTSIDE_SUBNET + line);
-                    hasError = true;
-                    continue;
+                    return null;
                 }
                 if (!parseSystem(line, currentSubnet, network)) {
-                    hasError = true;
+                    return null;  // Error message already printed in parseSystem
                 }
             } else if (line.contains(CONNECTION_DELIMITER)) {
-                parseConnection(line, network);
+                if (!parseConnection(line, network)) {
+                    System.out.println(ERROR_PARSE_CONNECTION + line);
+                    return null;
+                }
             }
         }
 
-        return hasError ? null : network;
+        return network;
     }
 
     private Subnet parseSubnet(String line, Network network) {
