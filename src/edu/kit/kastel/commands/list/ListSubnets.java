@@ -37,7 +37,7 @@ public class ListSubnets implements Command {
         for (Subnet subnet : network.getSubnets()) {
             subnetCIDRs.add(subnet.getCidr());
         }
-        subnetCIDRs.sort(IpAddressComparator::compareSubnetCidrs);
+        subnetCIDRs.sort(IpAddressComparator::compareSubnetCIDRs);
         return String.join(EMPTY_SPACE, subnetCIDRs);
     }
 }
