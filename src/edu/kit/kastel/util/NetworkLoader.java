@@ -56,9 +56,7 @@ public class NetworkLoader {
                     hasError = true;
                 }
             } else if (line.contains(CONNECTION_DELIMITER)) {
-                if (!parseConnection(line, network)) {
-                    hasError = true;
-                }
+                parseConnection(line, network);
             }
         }
 
@@ -106,7 +104,6 @@ public class NetworkLoader {
     private boolean parseConnection(String line, Network network) {
         String[] parts = line.split("<-->", 2);
         if (parts.length != 2) {
-            System.out.println(ERROR_PARSE_CONNECTION + line);
             return false;
         }
 
@@ -119,14 +116,12 @@ public class NetworkLoader {
         if (system2NameAndWeight.startsWith("|")) {
             int endWeightIndex = system2NameAndWeight.indexOf("|", 1);
             if (endWeightIndex == -1) {
-                System.out.println(ERROR_PARSE_CONNECTION + line);
                 return false;
             }
             try {
                 weight = Integer.parseInt(system2NameAndWeight.substring(1, endWeightIndex).trim());
                 system2Name = system2NameAndWeight.substring(endWeightIndex + 1).trim();
             } catch (NumberFormatException e) {
-                System.out.println(ERROR_PARSE_CONNECTION + line);
                 return false;
             }
         } else {
@@ -138,10 +133,9 @@ public class NetworkLoader {
 
         if (system1 != null && system2 != null) {
             network.addConnection(new Connection(system1, system2, weight));
-        } else {
-            System.out.println(ERROR_PARSE_CONNECTION + line);
+            return true;
         }
 
-        return true;
+        return false;
     }
 }
