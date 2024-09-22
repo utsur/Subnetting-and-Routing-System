@@ -55,7 +55,13 @@ public class Subnet {
      */
     public String getFirstIp() {
         String[] parts = this.cidr.split("/");
-        return parts[0]; // The network address is the first IP address.
+        String networkAddress = parts[0];
+        String[] octets = networkAddress.split("\\.");
+        // Increment the last octet by 1 to get the first IP address.
+        int lastOctet = Integer.parseInt(octets[3]);
+        octets[3] = String.valueOf(lastOctet + 1);
+
+        return String.join(".", octets);
     }
 
     /**
@@ -65,7 +71,6 @@ public class Subnet {
     public long getFirstIpAsLong() {
         return ipToLong(getFirstIp());
     }
-
 
     /**
      * This method returns the last IP address of the subnet.
