@@ -26,6 +26,7 @@ public class NetworkLoader {
     private static final String ERROR_OUTSIDE_SUBNET = "Error, system outside subnet: ";
     private static final String ERROR_INVALID_SUBNET = "Error, Invalid subnet: ";
     private static final String ERROR_OVERLAPPING_SUBNET = "Error, Overlapping subnet: ";
+    private static final String ERROR_ROUTER_NOT_FIRST_IP = "Error, Router must have the first IP address in the subnet: ";
     private static final int MAX_IP_OCTET = 255;
     private static final int MIN_SUBNET_MASK = 0;
     private static final int MAX_SUBNET_MASK = 31;
@@ -159,6 +160,10 @@ public class NetworkLoader {
 
         Systems system;
         if (name.contains(ROUTER_IDENTIFIER)) {
+            if (!ip.equals(subnet.getFirstIp())) {
+                System.out.println(ERROR_ROUTER_NOT_FIRST_IP + ip);
+                return false;
+            }
             system = new Router(name, ip, subnet);
         } else {
             system = new Computer(name, ip, subnet);

@@ -54,8 +54,8 @@ public class Subnet {
      * @return the first IP address of the subnet.
      */
     public String getFirstIp() {
-        String[] parts = cidr.split(CIDR_DELIMITER);
-        return parts[0];
+        String[] parts = this.cidr.split("/");
+        return parts[0]; // The network address is the first IP address.
     }
 
     /**
