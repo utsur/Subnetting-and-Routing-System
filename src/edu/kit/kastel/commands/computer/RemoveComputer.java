@@ -1,6 +1,5 @@
 package edu.kit.kastel.commands.computer;
 
-import edu.kit.kastel.commands.Command;
 import edu.kit.kastel.model.Computer;
 import edu.kit.kastel.model.Network;
 import edu.kit.kastel.model.Subnet;
@@ -14,36 +13,28 @@ import edu.kit.kastel.model.Systems;
  * If the command format is invalid, an error message is returned.
  * @author utsur
  */
-public class RemoveComputerCommand implements Command {
+public class RemoveComputer extends AbstractComputerCommand {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'remove computer <subnet> <ip>'";
-    private static final String ERROR_INVALID_SUBNET = "Error, Invalid subnet.";
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
     private static final String ERROR_NOT_COMPUTER = "Error, The specified IP does not belong to a computer.";
     private static final String ERROR_NOT_IN_SUBNET = "Error, The specified IP does not exist in the given subnet.";
-    private static final int EXPECTED_ARGS = 4;
-    private final Network network;
 
     /**
-     * Creates a new RemoveComputerCommand with the given network.
+     * Creates a new RemoveComputer with the given network.
      * @param network The network to remove the computer from.
      */
-    public RemoveComputerCommand(Network network) {
-        this.network = network;
+    public RemoveComputer(Network network) {
+        super(network);
     }
 
     @Override
     public String execute(String[] args) {
-        if (args.length != EXPECTED_ARGS) {
-            return ERROR_FORMAT;
-        }
-
-        String subnetCidr = args[2];
-        String ip = args[3];
-
-        Subnet subnet = network.getSubnetByCidr(subnetCidr);
+        Subnet subnet = validateAndGetSubnet(args);
         if (subnet == null) {
-            return ERROR_INVALID_SUBNET;
+            return String.format(ERROR_FORMAT, "remove");
         }
+
+        String ip = args[3];
 
         Systems system = network.getSystemByIp(ip);
         if (system == null) {

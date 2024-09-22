@@ -11,11 +11,10 @@ import edu.kit.kastel.model.Systems;
  * It adds a connection between two systems in the network.
  * @author utsur
  */
-public class AddConnectionCommand implements Command {
+public class AddConnection implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'add connection <ip1> <ip2> [<weight>]'";
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
     private static final String ERROR_SAME_IP = "Error, Cannot create a connection to the same IP address.";
-    private static final String ERROR_SAME_SUBNET = "Error, Connections between routers in the same subnet are not allowed.";
     private static final String ERROR_DIFFERENT_SUBNET = "Error, Only routers can have connections to other subnets.";
     private static final String ERROR_CONNECTION_EXISTS = "Error, Connection already exists.";
     private static final int MIN_ARGS = 4;
@@ -26,7 +25,7 @@ public class AddConnectionCommand implements Command {
      * Creates a new add connection command.
      * @param network The network to add the connection to.
      */
-    public AddConnectionCommand(Network network) {
+    public AddConnection(Network network) {
         this.network = network;
     }
 

@@ -14,17 +14,17 @@ import java.util.List;
  * The subnets are sorted by their CIDR.
  * @author utsur
  */
-public class ListSubnetsCommand implements Command {
+public class ListSubnets implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'list subnets'";
     private static final String SUBNETS_STRING = "subnets";
     private static final String EMPTY_SPACE = " ";
     private final Network network;
 
     /**
-     * This constructor creates a new ListSubnetsCommand object with the given network.
+     * This constructor creates a new ListSubnets object with the given network.
      * @param network The network to list subnets from.
      */
-    public ListSubnetsCommand(Network network) {
+    public ListSubnets(Network network) {
         this.network = network;
     }
 

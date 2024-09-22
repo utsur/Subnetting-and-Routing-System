@@ -13,7 +13,7 @@ import java.util.List;
  * If no path is found, an error message is returned.
  * @author utsur
  */
-public class SendPacketCommand implements Command {
+public class SendPacket implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'send packet <source_ip> <destination_ip>'";
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
     private static final String ERROR_SAME_IP = "Error, Source and destination IP addresses cannot be the same.";
@@ -30,7 +30,7 @@ public class SendPacketCommand implements Command {
      * Creates a new send packet command with the given network.
      * @param network The network to send the packet in.
      */
-    public SendPacketCommand(Network network) {
+    public SendPacket(Network network) {
         this.network = network;
         this.pathFinder = new PathFinder(network);
     }

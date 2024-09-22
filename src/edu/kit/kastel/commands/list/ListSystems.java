@@ -15,16 +15,16 @@ import java.util.List;
  * The command takes a network and a subnet as input and returns a list of all systems in the subnet.
  * @author utsur
  */
-public class ListSystemsCommand implements Command {
+public class ListSystems implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'list systems <subnet>'";
     private static final String ERROR_SUBNET = "Error, Subnet not found.";
     private final Network network;
 
     /**
-     * This constructor creates a new ListSystemsCommand object with the given network.
+     * This constructor creates a new ListSystems object with the given network.
      * @param network The network to list systems from.
      */
-    public ListSystemsCommand(Network network) {
+    public ListSystems(Network network) {
         this.network = network;
     }
 

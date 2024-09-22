@@ -9,7 +9,7 @@ import edu.kit.kastel.model.Systems;
  * It removes a connection between two systems in the network.
  * @author utsur
  */
-public class RemoveConnectionCommand implements Command {
+public class RemoveConnection implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'remove connection <ip1> <ip2>'";
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
     private static final String ERROR_NO_CONNECTION = "Error, No connection exists between the specified systems.";
@@ -20,7 +20,7 @@ public class RemoveConnectionCommand implements Command {
      * Creates a new remove connection command.
      * @param network The network to remove the connection from.
      */
-    public RemoveConnectionCommand(Network network) {
+    public RemoveConnection(Network network) {
         this.network = network;
     }
 

@@ -9,7 +9,7 @@ import edu.kit.kastel.model.Subnet;
  * The command takes a network and a subnet as input and returns the first and last IP address of the subnet.
  * @author utsur
  */
-public class ListRangeCommand implements Command {
+public class ListRange implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'list range <subnet>'";
     private static final String ERROR_SUBNET = "Error, Subnet not found.";
     private static final String EMPTY_SPACE = " ";
@@ -17,10 +17,10 @@ public class ListRangeCommand implements Command {
     private final Network network;
 
     /**
-     * This constructor creates a new ListRangeCommand object with the given network.
+     * This constructor creates a new ListRange object with the given network.
      * @param network The network to list the range from.
      */
-    public ListRangeCommand(Network network) {
+    public ListRange(Network network) {
         this.network = network;
     }
 

@@ -1,12 +1,12 @@
 package edu.kit.kastel.commands;
 
-import edu.kit.kastel.commands.computer.AddComputerCommand;
-import edu.kit.kastel.commands.computer.RemoveComputerCommand;
-import edu.kit.kastel.commands.connection.AddConnectionCommand;
-import edu.kit.kastel.commands.connection.RemoveConnectionCommand;
-import edu.kit.kastel.commands.list.ListRangeCommand;
-import edu.kit.kastel.commands.list.ListSubnetsCommand;
-import edu.kit.kastel.commands.list.ListSystemsCommand;
+import edu.kit.kastel.commands.computer.AddComputer;
+import edu.kit.kastel.commands.computer.RemoveComputer;
+import edu.kit.kastel.commands.connection.AddConnection;
+import edu.kit.kastel.commands.connection.RemoveConnection;
+import edu.kit.kastel.commands.list.ListRange;
+import edu.kit.kastel.commands.list.ListSubnets;
+import edu.kit.kastel.commands.list.ListSystems;
 import edu.kit.kastel.model.Network;
 
 import java.util.HashMap;
@@ -43,16 +43,16 @@ public class CommandHandler {
     public CommandHandler(Network network) {
         this.network = network;
         commands = new HashMap<>();
-        commands.put(LOAD_COMMAND, new LoadNetworkCommand(network));
-        commands.put(LIST_COMMAND, new ListSubnetsCommand(network));
-        commands.put(LIST_RANGE_COMMAND, new ListRangeCommand(network));
-        commands.put(LIST_SYSTEMS_COMMAND, new ListSystemsCommand(network));
-        commands.put(ADD_CONNECTION_COMMAND, new AddConnectionCommand(network));
-        commands.put(REMOVE_CONNECTION_COMMAND, new RemoveConnectionCommand(network));
-        commands.put(ADD_COMPUTER_COMMAND, new AddComputerCommand(network));
-        commands.put(REMOVE_COMPUTER_COMMAND, new RemoveComputerCommand(network));
-        commands.put(SEND_PACKET_COMMAND, new SendPacketCommand(network));
-        commands.put(QUIT_COMMAND, new QuitCommand());
+        commands.put(LOAD_COMMAND, new LoadNetwork(network));
+        commands.put(LIST_COMMAND, new ListSubnets(network));
+        commands.put(LIST_RANGE_COMMAND, new ListRange(network));
+        commands.put(LIST_SYSTEMS_COMMAND, new ListSystems(network));
+        commands.put(ADD_CONNECTION_COMMAND, new AddConnection(network));
+        commands.put(REMOVE_CONNECTION_COMMAND, new RemoveConnection(network));
+        commands.put(ADD_COMPUTER_COMMAND, new AddComputer(network));
+        commands.put(REMOVE_COMPUTER_COMMAND, new RemoveComputer(network));
+        commands.put(SEND_PACKET_COMMAND, new SendPacket(network));
+        commands.put(QUIT_COMMAND, new Quit());
     }
 
     /**
@@ -72,7 +72,7 @@ public class CommandHandler {
 
         if (command != null) {
             // Check if network is loaded for all commands except 'load' and 'quit'
-            if (!(command instanceof LoadNetworkCommand) && !(command instanceof QuitCommand)) {
+            if (!(command instanceof LoadNetwork) && !(command instanceof Quit)) {
                 if (network.getSubnets().isEmpty()) {
                     return ERROR_NO_NETWORK;
                 }
