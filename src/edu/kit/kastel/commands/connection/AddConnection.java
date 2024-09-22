@@ -19,6 +19,9 @@ public class AddConnection implements Command {
     private static final String ERROR_CONNECTION_EXISTS = "Error, Connection already exists.";
     private static final int MIN_ARGS = 4;
     private static final int MAX_ARGS = 5;
+    private static final int WEIGHT_ARGS = 4;
+    private static final int IP1 = 2;
+    private static final int IP2 = 3;
     private final Network network;
 
     /**
@@ -35,8 +38,8 @@ public class AddConnection implements Command {
             return ERROR_FORMAT;
         }
 
-        String ip1 = args[2];
-        String ip2 = args[3];
+        String ip1 = args[IP1];
+        String ip2 = args[IP2];
 
         if (ip1.equals(ip2)) {
             return ERROR_SAME_IP;
@@ -46,7 +49,7 @@ public class AddConnection implements Command {
 
         if (args.length == MAX_ARGS) {
             try {
-                weight = Integer.parseInt(args[4]);
+                weight = Integer.parseInt(args[WEIGHT_ARGS]);
             } catch (NumberFormatException e) {
                 return ERROR_FORMAT;
             }

@@ -14,6 +14,8 @@ public class RemoveConnection implements Command {
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
     private static final String ERROR_NO_CONNECTION = "Error, No connection exists between the specified systems.";
     private static final int EXPECTED_ARGS = 4;
+    private static final int IP1 = 2;
+    private static final int IP2 = 3;
     private final Network network;
 
     /**
@@ -30,8 +32,8 @@ public class RemoveConnection implements Command {
             return ERROR_FORMAT;
         }
 
-        String ip1 = args[2];
-        String ip2 = args[3];
+        String ip1 = args[IP1];
+        String ip2 = args[IP2];
 
         Systems system1 = network.getSystemByIp(ip1);
         Systems system2 = network.getSystemByIp(ip2);
