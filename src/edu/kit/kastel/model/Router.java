@@ -37,12 +37,16 @@ public class Router extends Systems {
         for (Map.Entry<String, List<String>> entry : newRoutes.entrySet()) {
             String subnet = entry.getKey();
             List<String> path = new ArrayList<>(entry.getValue());
-            path.add(0, this.getIpAddress());
 
-            if (!routingTable.containsKey(subnet) || path.size() < routingTable.get(subnet).size()) {
-                routingTable.put(subnet, path);
-            } else if (path.size() == routingTable.get(subnet).size() && path.get(1).compareTo(routingTable.get(subnet).get(1)) < 0) {
-                routingTable.put(subnet, path);
+            if (!subnet.equals(this.getSubnet().getCidr())) {
+                path.add(0, this.getIpAddress());
+
+                if (!routingTable.containsKey(subnet)
+                    || path.size() < routingTable.get(subnet).size()
+                    || (path.size() == routingTable.get(subnet).size()
+                    && path.get(1).compareTo(routingTable.get(subnet).get(1)) < 0)) {
+                    routingTable.put(subnet, path);
+                }
             }
         }
     }

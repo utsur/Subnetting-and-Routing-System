@@ -84,7 +84,6 @@ public class PathFinder {
             return null;
         }
         path.addAll(sourceToRouter);
-
         // Find path between routers using BGP tables
         Router currentRouter = source.getSubnet().getRouter();
         Router destinationRouter = destination.getSubnet().getRouter();
@@ -96,6 +95,9 @@ public class PathFinder {
             }
             String nextRouterIp = routerPath.get(1); // Get the next hop
             Router nextRouter = (Router) network.getSystemByIp(nextRouterIp);
+            if (nextRouter == null) {
+                return null; // Invalid next hop
+            }
             path.add(nextRouter);
             currentRouter = nextRouter;
         }

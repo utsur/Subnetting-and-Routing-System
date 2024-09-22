@@ -14,6 +14,7 @@ import java.util.Set;
  * @author utsur
  */
 public class Network {
+    private static final String ERROR_INVALID_CONNECTION = "Error, Invalid connection.";
     private final List<Subnet> subnets;
     private final Map<String, Systems> systemsByIp;
     private final Map<String, Systems> systemsByName;
@@ -36,13 +37,19 @@ public class Network {
      * The BGP tables are updated based on the connections between the routers.
      */
     public void updateBGPTables() {
+        for (Systems system : systemsByIp.values()) {
+            if (system instanceof Router) {
+                ((Router) system).resetRoutingTable();
+            }
+        }
+
         boolean changed;
         do {
             changed = false;
             for (Systems system : systemsByIp.values()) {
                 if (system instanceof Router) {
                     Router router = (Router) system;
-                    Map<String, List<String>> oldTable = router.getRoutingTable();
+                    Map<String, List<String>> oldTable = new HashMap<>(router.getRoutingTable());
 
                     for (Connection conn : connections) {
                         if (conn.getSystem1() == router || conn.getSystem2() == router) {
@@ -151,11 +158,14 @@ public class Network {
      * @param system2 The second system.
      */
     public void removeConnection(Systems system1, Systems system2) {
-        connections.removeIf(conn ->
+        boolean removed = connections.removeIf(conn ->
             (conn.getSystem1() == system1 && conn.getSystem2() == system2)
                 || (conn.getSystem1() == system2 && conn.getSystem2() == system1)
         );
-        updateBGPTables();
+        if (!removed) {
+            System.out.println(ERROR_INVALID_CONNECTION);
+            return;
+        }
         updateBGPTables();
     }
 
@@ -183,14 +193,13 @@ public class Network {
         return new HashSet<>(connections);
     }
 
-    /*
     private void resetBGPTables() {
         for (Systems system : systemsByIp.values()) {
             if (system instanceof Router) {
                 ((Router) system).resetRoutingTable();
             }
         }
-    } */
+    }
 
     /**
      * This method updates the BGP tables of all routers in the network.
