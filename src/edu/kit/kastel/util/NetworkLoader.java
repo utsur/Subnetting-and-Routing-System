@@ -33,11 +33,12 @@ public class NetworkLoader {
      * Load a network from a file.
      * It reads the file line by line and creates the network, subnets, systems, and connections.
      * Uses the helper methods in this class to handle the different network parts.
-     * @param lines the lines of the file
+     * @param filePath the path to the file
      * @return the network
      */
-    public Network loadNetwork(List<String> lines) {
+    public Network loadNetwork(String filePath) {
         Network network = new Network();
+        List<String> lines = FileHelper.readAllLines(filePath);
         Subnet currentSubnet = null;
         boolean hasError = false;
 
@@ -49,9 +50,6 @@ public class NetworkLoader {
 
             if (line.startsWith(SUBGRAPH_PREFIX)) {
                 currentSubnet = parseSubnet(line, network);
-                if (currentSubnet == null) {
-                    hasError = true;
-                }
             } else if (line.contains(SYSTEM_DELIMITER)) {
                 if (currentSubnet == null) {
                     System.out.println(ERROR_OUTSIDE_SUBNET + line);
@@ -62,10 +60,7 @@ public class NetworkLoader {
                     hasError = true;
                 }
             } else if (line.contains(CONNECTION_DELIMITER)) {
-                if (!parseConnection(line, network)) {
-                    System.out.println(ERROR_PARSE_CONNECTION + line);
-                    hasError = true;
-                }
+                parseConnection(line, network);
             }
         }
 
