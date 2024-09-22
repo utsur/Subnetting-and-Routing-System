@@ -1,7 +1,7 @@
 package edu.kit.kastel.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.Map;
  * @author utsur
  */
 public class Router extends Systems {
-    private Map<String, List<String>> routingTable;
+    private final Map<String, List<String>> routingTable;
 
     /**
      * This constructor creates a new Router object with the given IP address and subnet.
@@ -26,7 +26,7 @@ public class Router extends Systems {
     }
 
     private void initializeRoutingTable() {
-        routingTable.put(this.getSubnet().getCidr(), Arrays.asList(this.getIpAddress()));
+        routingTable.put(this.getSubnet().getCidr(), Collections.singletonList(this.getIpAddress()));
     }
 
     /**
