@@ -44,7 +44,7 @@ public class LoadNetworkCommand implements Command {
         // Parse and validate the file content.
         Network loadedNetwork = loader.loadNetwork(path);
         if (loadedNetwork == null) {
-            return ERROR_LOAD;
+            return null; // Error messages have already been printed
         }
         // Actualize the network with the loaded data.
         network.updateFrom(loadedNetwork);

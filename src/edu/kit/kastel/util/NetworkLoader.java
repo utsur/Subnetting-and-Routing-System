@@ -36,6 +36,7 @@ public class NetworkLoader {
         Network network = new Network();
         List<String> lines = FileHelper.readAllLines(filePath);
         Subnet currentSubnet = null;
+        boolean hasError = false;
 
         for (String originalLine : lines) {
             String line = originalLine.trim();
@@ -43,22 +44,27 @@ public class NetworkLoader {
                 continue;
             }
 
+            System.out.println(originalLine);  // Print the original line
+
             if (line.startsWith(SUBGRAPH_PREFIX)) {
                 currentSubnet = parseSubnet(line, network);
             } else if (line.contains(SYSTEM_DELIMITER)) {
                 if (currentSubnet == null) {
                     System.out.println(ERROR_OUTSIDE_SUBNET + line);
-                    return null;
+                    hasError = true;
+                    continue;
                 }
                 if (!parseSystem(line, currentSubnet, network)) {
-                    return null;
+                    hasError = true;
                 }
             } else if (line.contains(CONNECTION_DELIMITER)) {
-                parseConnection(line, network);
+                if (!parseConnection(line, network)) {
+                    hasError = true;
+                }
             }
         }
 
-        return network;
+        return hasError ? null : network;
     }
 
     private Subnet parseSubnet(String line, Network network) {
@@ -99,11 +105,11 @@ public class NetworkLoader {
         return true;
     }
 
-    private void parseConnection(String line, Network network) {
+    private boolean parseConnection(String line, Network network) {
         String[] parts = line.split("<-->", 2);
         if (parts.length != 2) {
             System.out.println(ERROR_PARSE_CONNECTION + line);
-            return;
+            return false;
         }
 
         String system1Name = parts[0].trim();
@@ -116,14 +122,14 @@ public class NetworkLoader {
             int endWeightIndex = system2NameAndWeight.indexOf("|", 1);
             if (endWeightIndex == -1) {
                 System.out.println(ERROR_PARSE_CONNECTION + line);
-                return;
+                return false;
             }
             try {
                 weight = Integer.parseInt(system2NameAndWeight.substring(1, endWeightIndex).trim());
                 system2Name = system2NameAndWeight.substring(endWeightIndex + 1).trim();
             } catch (NumberFormatException e) {
                 System.out.println(ERROR_PARSE_CONNECTION + line);
-                return;
+                return false;
             }
         } else {
             system2Name = system2NameAndWeight;
@@ -137,5 +143,7 @@ public class NetworkLoader {
         } else {
             System.out.println(ERROR_PARSE_CONNECTION + line);
         }
+
+        return true;
     }
 }
