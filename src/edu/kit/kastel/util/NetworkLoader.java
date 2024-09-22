@@ -168,7 +168,8 @@ public class NetworkLoader {
         if (name.contains(ROUTER_IDENTIFIER)) {
             String firstUsableIp = subnet.getFirstUsableIp();
             if (!ip.equals(firstUsableIp)) {
-                System.out.println(String.format("%s%s (should be %s)", ERROR_ROUTER_NOT_FIRST_IP, ip, firstUsableIp));            }
+                System.out.println(String.format("%s%s (should be %s)", ERROR_ROUTER_NOT_FIRST_IP, ip, firstUsableIp));
+            }
             system = new Router(name, ip, subnet);
         } else {
             system = new Computer(name, ip, subnet);
