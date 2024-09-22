@@ -25,6 +25,7 @@ public class LoadNetworkCommand implements Command {
         this.loader = new NetworkLoader();
     }
 
+
     @Override
     public String execute(String[] args) {
         if (args.length != 3 || !args[1].equals(NETWORK_STRING)) {
@@ -37,7 +38,12 @@ public class LoadNetworkCommand implements Command {
             return null; // Error message already printed in readAllLines.
         }
 
-        Network loadedNetwork = loader.loadNetwork(path);
+        // Zuerst den gesamten Netzwerkinhalt ausgeben
+        for (String line : fileContent) {
+            System.out.println(line.trim());
+        }
+
+        Network loadedNetwork = loader.loadNetwork(fileContent);
         if (loadedNetwork == null) {
             return null; // Error message already printed in loadNetwork.
         }

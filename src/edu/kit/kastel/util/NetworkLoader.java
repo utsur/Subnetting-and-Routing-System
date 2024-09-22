@@ -33,13 +33,13 @@ public class NetworkLoader {
      * Load a network from a file.
      * It reads the file line by line and creates the network, subnets, systems, and connections.
      * Uses the helper methods in this class to handle the different network parts.
-     * @param filePath the path to the file
+     * @param lines the lines of the file
      * @return the network
      */
-    public Network loadNetwork(String filePath) {
+    public Network loadNetwork(List<String> lines) {
         Network network = new Network();
-        List<String> lines = FileHelper.readAllLines(filePath);
         Subnet currentSubnet = null;
+        boolean hasError = false;
 
         for (String originalLine : lines) {
             String line = originalLine.trim();
@@ -47,30 +47,29 @@ public class NetworkLoader {
                 continue;
             }
 
-            System.out.println(originalLine);  // Print the original line
-
             if (line.startsWith(SUBGRAPH_PREFIX)) {
                 currentSubnet = parseSubnet(line, network);
                 if (currentSubnet == null) {
-                    return null;  // Error message already printed in parseSubnet
+                    hasError = true;
                 }
             } else if (line.contains(SYSTEM_DELIMITER)) {
                 if (currentSubnet == null) {
                     System.out.println(ERROR_OUTSIDE_SUBNET + line);
-                    return null;
+                    hasError = true;
+                    continue;
                 }
                 if (!parseSystem(line, currentSubnet, network)) {
-                    return null;  // Error message already printed in parseSystem
+                    hasError = true;
                 }
             } else if (line.contains(CONNECTION_DELIMITER)) {
                 if (!parseConnection(line, network)) {
                     System.out.println(ERROR_PARSE_CONNECTION + line);
-                    return null;
+                    hasError = true;
                 }
             }
         }
 
-        return network;
+        return hasError ? null : network;
     }
 
     private Subnet parseSubnet(String line, Network network) {
