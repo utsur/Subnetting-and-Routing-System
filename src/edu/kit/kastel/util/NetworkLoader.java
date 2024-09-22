@@ -27,7 +27,7 @@ public class NetworkLoader {
     private static final String ERROR_INVALID_SUBNET = "Error, Invalid subnet: ";
     private static final String ERROR_OVERLAPPING_SUBNET = "Error, Overlapping subnet: ";
     private static final String ERROR_UNWEIGHTED_CONNECTION = "Error, Connection inside subnet must be weighted: ";
-
+    private static final String ERROR_WEIGHTED_INTER_SUBNET = "Error, Connection between routers must not be weighted: ";
     private static final String ERROR_ROUTER_NOT_FIRST_IP = "Error, Router must have the first IP address in the subnet: ";
     private static final int MAX_IP_OCTET = 255;
     private static final int MIN_SUBNET_MASK = 0;
@@ -228,8 +228,11 @@ public class NetworkLoader {
             }
             return null;
         }
-        // If both systems are routers, the connection is valid (and can be unweighted)
+        // If both systems are routers, the connection is valid but must not be weighted
         if (system1 instanceof Router && system2 instanceof Router) {
+            if (weight != null) {
+                return ERROR_WEIGHTED_INTER_SUBNET + system1.getName() + " <--> " + system2.getName();
+            }
             return null;
         }
         // Otherwise, the connection is invalid
