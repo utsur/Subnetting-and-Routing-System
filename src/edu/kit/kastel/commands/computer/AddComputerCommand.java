@@ -16,6 +16,7 @@ public class AddComputerCommand implements Command {
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
     private static final String ERROR_IP_EXISTS = "Error, IP address already exists in the network.";
     private static final String ERROR_IP_NOT_IN_SUBNET = "Error, IP address is not in the specified subnet.";
+    private static final String PC_NAME = "PC_";
     private static final int EXPECTED_ARGS = 4;
     private final Network network;
 
@@ -49,7 +50,7 @@ public class AddComputerCommand implements Command {
             return ERROR_IP_NOT_IN_SUBNET;
         }
 
-        Computer computer = new Computer("PC_" + ip.replace('.', '_'), ip, subnet);
+        Computer computer = new Computer(PC_NAME + ip.replace('.', '_'), ip, subnet);
         network.addSystem(computer);
         subnet.addSystem(computer);
 

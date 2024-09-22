@@ -18,6 +18,7 @@ public class NetworkLoader {
     private static final String SUBGRAPH_PREFIX = "subgraph";
     private static final String SYSTEM_DELIMITER = "[";
     private static final String CONNECTION_DELIMITER = "<-->";
+    private static final String WEIGHT_DELIMITER = "|";
     private static final String EMPTY_SPACE = " ";
     private static final String ROUTER_IDENTIFIER = "Router";
     private static final String DEFAULT_GATEWAY = "0.0.0.0";
@@ -167,9 +168,7 @@ public class NetworkLoader {
         if (name.contains(ROUTER_IDENTIFIER)) {
             String firstUsableIp = subnet.getFirstUsableIp();
             if (!ip.equals(firstUsableIp)) {
-                System.out.println(ERROR_ROUTER_NOT_FIRST_IP + ip + " (should be " + firstUsableIp + ")");
-                return false;
-            }
+                System.out.println(String.format("%s%s (should be %s)", ERROR_ROUTER_NOT_FIRST_IP, ip, firstUsableIp));            }
             system = new Router(name, ip, subnet);
         } else {
             system = new Computer(name, ip, subnet);
@@ -192,8 +191,8 @@ public class NetworkLoader {
         String system2Name;
         Integer weight = null;
 
-        if (system2NameAndWeight.startsWith("|")) {
-            int endWeightIndex = system2NameAndWeight.indexOf("|", 1);
+        if (system2NameAndWeight.startsWith(WEIGHT_DELIMITER)) {
+            int endWeightIndex = system2NameAndWeight.indexOf(WEIGHT_DELIMITER, 1);
             if (endWeightIndex == -1) {
                 return ERROR_PARSE_CONNECTION + line;
             }
