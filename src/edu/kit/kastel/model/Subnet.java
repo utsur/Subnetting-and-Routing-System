@@ -55,9 +55,18 @@ public class Subnet {
      */
     public String getFirstIp() {
         String[] parts = this.cidr.split("/");
+        return parts[0];  // This is the network address
+    }
+
+    /**
+     * This method returns the first usable host IP address of the subnet.
+     * @return the first usable host IP address of the subnet.
+     */
+    public String getFirstUsableIp() {
+        String[] parts = this.cidr.split("/");
         String networkAddress = parts[0];
         String[] octets = networkAddress.split("\\.");
-        // Increment the last octet by 1 to get the first IP address.
+        // Increment the last octet by 1 to get the first usable host IP
         int lastOctet = Integer.parseInt(octets[3]);
         octets[3] = String.valueOf(lastOctet + 1);
 

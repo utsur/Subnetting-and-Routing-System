@@ -160,9 +160,9 @@ public class NetworkLoader {
 
         Systems system;
         if (name.contains(ROUTER_IDENTIFIER)) {
-            String firstIp = subnet.getFirstIp();
-            if (!ip.equals(firstIp)) {
-                System.out.println(ERROR_ROUTER_NOT_FIRST_IP + ip + " (should be " + firstIp + ")");
+            String firstUsableIp = subnet.getFirstUsableIp();
+            if (!ip.equals(firstUsableIp)) {
+                System.out.println(ERROR_ROUTER_NOT_FIRST_IP + ip + " (should be " + firstUsableIp + ")");
                 return false;
             }
             system = new Router(name, ip, subnet);
