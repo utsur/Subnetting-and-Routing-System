@@ -13,6 +13,9 @@ public class AddComputer extends AbstractComputerCommand {
     private static final String ERROR_IP_EXISTS = "Error, IP address already exists in the network.";
     private static final String ERROR_IP_NOT_IN_SUBNET = "Error, IP address is not in the specified subnet.";
     private static final String PC_NAME = "PC_";
+    private static final String ADD = "add";
+    private static final String DOT = ".";
+    private static final String UNDERLINE = "_";
 
     /**
      * Creates a new AddComputer with the given network.
@@ -26,7 +29,7 @@ public class AddComputer extends AbstractComputerCommand {
     public String execute(String[] args) {
         Subnet subnet = validateAndGetSubnet(args);
         if (subnet == null) {
-            return String.format(ERROR_FORMAT, "add");
+            return String.format(ERROR_FORMAT, ADD);
         }
 
         String ip = args[3];
@@ -39,7 +42,7 @@ public class AddComputer extends AbstractComputerCommand {
             return ERROR_IP_NOT_IN_SUBNET;
         }
 
-        Computer computer = new Computer(PC_NAME + ip.replace('.', '_'), ip, subnet);
+        Computer computer = new Computer(PC_NAME + ip.replace(DOT, UNDERLINE), ip, subnet);
         network.addSystem(computer);
         subnet.addSystem(computer);
 
