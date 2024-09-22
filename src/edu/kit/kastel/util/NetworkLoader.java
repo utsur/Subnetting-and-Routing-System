@@ -44,8 +44,6 @@ public class NetworkLoader {
                 continue;
             }
 
-            System.out.println(originalLine);  // Print the original line
-
             if (line.startsWith(SUBGRAPH_PREFIX)) {
                 currentSubnet = parseSubnet(line, network);
             } else if (line.contains(SYSTEM_DELIMITER)) {

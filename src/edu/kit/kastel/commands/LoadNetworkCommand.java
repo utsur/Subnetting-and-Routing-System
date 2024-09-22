@@ -12,7 +12,6 @@ import java.util.List;
  */
 public class LoadNetworkCommand implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'load network <path>'";
-    private static final String ERROR_LOAD = "Error, Failed to load network.";
     private static final String NETWORK_STRING = "network";
     private final Network network;
     private final NetworkLoader loader;
@@ -32,23 +31,24 @@ public class LoadNetworkCommand implements Command {
             return ERROR_FORMAT;
         }
         String path = args[2];
-        // Read the file content and print it to the console.
+
         List<String> fileContent = FileHelper.readAllLines(path);
         if (fileContent.isEmpty()) {
-            return null; // No error message, FileHelper already printed an error message.
+            return null; // FileHelper already printed the error message.
         }
-
+        // print the network file content.
         for (String line : fileContent) {
             System.out.println(line);
         }
-        // Parse and validate the file content.
+        // Loading and validation of the network.
         Network loadedNetwork = loader.loadNetwork(path);
         if (loadedNetwork == null) {
-            return null; // Error messages have already been printed
+            return null; // Error messages are already printed by the loader.
         }
-        // Actualize the network with the loaded data.
+
+        // Actualisation of the network after loading.
         network.updateFrom(loadedNetwork);
-        network.updateBGPTables(); // Initialize BGP tables after loading.
+        network.updateBGPTables(); // Initialisation of the BGP tables.
         return null;
     }
 }
