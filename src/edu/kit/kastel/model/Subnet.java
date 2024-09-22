@@ -59,6 +59,15 @@ public class Subnet {
     }
 
     /**
+     * This method returns the first IP address of the subnet as a long.
+     * @return the first IP address of the subnet as a long.
+     */
+    public long getFirstIpAsLong() {
+        return ipToLong(getFirstIp());
+    }
+
+
+    /**
      * This method returns the last IP address of the subnet.
      * @return the last IP address of the subnet.
      */
@@ -90,6 +99,14 @@ public class Subnet {
     }
 
     /**
+     * This method returns the last IP address of the subnet as a long.
+     * @return the last IP address of the subnet as a long.
+     */
+    public long getLastIpAsLong() {
+        return ipToLong(getLastIp());
+    }
+
+    /**
      * This method checks if the given IP address is in the subnet.
      * @param ip The IP address to check.
      * @return true if the IP address is in the subnet, false otherwise.
@@ -108,10 +125,10 @@ public class Subnet {
     }
 
     private long ipToLong(String ip) {
-        String[] octets = ip.split(IP_DELIMITER);
+        String[] octets = ip.split("\\.");
         long result = 0;
-        for (int i = 0; i < IP_PARTS; i++) {
-            result <<= BITS_IN_BYTE;
+        for (int i = 0; i < 4; i++) {
+            result <<= 8;
             result |= Long.parseLong(octets[i]);
         }
         return result;

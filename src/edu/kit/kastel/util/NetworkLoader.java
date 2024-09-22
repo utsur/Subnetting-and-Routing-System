@@ -25,6 +25,7 @@ public class NetworkLoader {
     private static final String ERROR_IP_NOT_IN_SUBNET = "Error, IP address %s is not in subnet %s";
     private static final String ERROR_OUTSIDE_SUBNET = "Error, system outside subnet: ";
     private static final String ERROR_INVALID_SUBNET = "Error, Invalid subnet: ";
+    private static final String ERROR_OVERLAPPING_SUBNET = "Error, Overlapping subnet: ";
     private static final int MAX_IP_OCTET = 255;
     private static final int MIN_SUBNET_MASK = 0;
     private static final int MAX_SUBNET_MASK = 31;
@@ -82,9 +83,18 @@ public class NetworkLoader {
             System.out.println(ERROR_INVALID_SUBNET + cidr);
             return null;
         }
-        Subnet subnet = new Subnet(cidr);
-        network.addSubnet(subnet);
-        return subnet;
+        Subnet newSubnet = new Subnet(cidr);
+
+        // Check for overlapping subnets
+        for (Subnet existingSubnet : network.getSubnets()) {
+            if (isOverlapping(newSubnet, existingSubnet)) {
+                System.out.println(ERROR_OVERLAPPING_SUBNET + cidr + " overlaps with " + existingSubnet.getCidr());
+                return null;
+            }
+        }
+
+        network.addSubnet(newSubnet);
+        return newSubnet;
     }
 
     private boolean isValidSubnet(String cidr) {
@@ -100,6 +110,15 @@ public class NetworkLoader {
             return false;
         }
         return isValidIp(ip) && mask >= MIN_SUBNET_MASK && mask <= MAX_SUBNET_MASK;
+    }
+
+    private boolean isOverlapping(Subnet subnet1, Subnet subnet2) {
+        long start1 = subnet1.getFirstIpAsLong();
+        long end1 = subnet1.getLastIpAsLong();
+        long start2 = subnet2.getFirstIpAsLong();
+        long end2 = subnet2.getLastIpAsLong();
+
+        return (start1 <= end2) && (start2 <= end1);
     }
 
     private boolean isValidIp(String ip) {
