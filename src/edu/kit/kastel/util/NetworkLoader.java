@@ -65,8 +65,9 @@ public class NetworkLoader {
                     return null;  // Error message was already printed in parseSystem.
                 }
             } else if (line.contains(CONNECTION_DELIMITER)) {
-                if (!parseConnection(line, network)) {
-                    System.out.println(ERROR_PARSE_CONNECTION + line);
+                String errorMessage = parseConnection(line, network);
+                if (errorMessage != null) {
+                    System.out.println(errorMessage);
                     return null;
                 }
             }
@@ -177,11 +178,10 @@ public class NetworkLoader {
         return true;
     }
 
-    private boolean parseConnection(String line, Network network) {
+    private String parseConnection(String line, Network network) {
         String[] parts = line.split("<-->", 2);
         if (parts.length != 2) {
-            System.out.println(ERROR_PARSE_CONNECTION + line);
-            return false;
+            return ERROR_PARSE_CONNECTION + line;
         }
 
         String system1Name = parts[0].trim();
@@ -193,15 +193,13 @@ public class NetworkLoader {
         if (system2NameAndWeight.startsWith("|")) {
             int endWeightIndex = system2NameAndWeight.indexOf("|", 1);
             if (endWeightIndex == -1) {
-                System.out.println(ERROR_PARSE_CONNECTION + line);
-                return false;
+                return ERROR_PARSE_CONNECTION + line;
             }
             try {
                 weight = Integer.parseInt(system2NameAndWeight.substring(1, endWeightIndex).trim());
                 system2Name = system2NameAndWeight.substring(endWeightIndex + 1).trim();
             } catch (NumberFormatException e) {
-                System.out.println(ERROR_PARSE_CONNECTION + line);
-                return false;
+                return ERROR_PARSE_CONNECTION + line;
             }
         } else {
             system2Name = system2NameAndWeight;
@@ -213,15 +211,13 @@ public class NetworkLoader {
         if (system1 != null && system2 != null) {
             String errorMessage = isValidConnection(system1, system2, weight);
             if (errorMessage != null) {
-                System.out.println(errorMessage);
-                return false;
+                return errorMessage;
             }
             network.addConnection(new Connection(system1, system2, weight));
-            return true;
+            return null;
         }
 
-        System.out.println(ERROR_PARSE_CONNECTION + line);
-        return false;
+        return ERROR_PARSE_CONNECTION + line;
     }
 
     private String isValidConnection(Systems system1, Systems system2, Integer weight) {
