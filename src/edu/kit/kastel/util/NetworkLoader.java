@@ -24,6 +24,10 @@ public class NetworkLoader {
     private static final String ERROR_PARSE_CONNECTION = "Error, parsing connection: ";
     private static final String ERROR_IP_NOT_IN_SUBNET = "Error, IP address %s is not in subnet %s";
     private static final String ERROR_OUTSIDE_SUBNET = "Error, system outside subnet: ";
+    private static final String ERROR_INVALID_SUBNET = "Error, Invalid subnet: ";
+    private static final int MAX_IP_OCTET = 255;
+    private static final int MIN_SUBNET_MASK = 1;
+    private static final int MAX_SUBNET_MASK = 31;
 
     /**
      * Load a network from a file.
@@ -69,9 +73,47 @@ public class NetworkLoader {
             System.out.println(ERROR_PARSE_SUBNET + line);
             return null;
         }
-        Subnet subnet = new Subnet(parts[1]);
+        String cidr = parts[1];
+        if (!isValidSubnet(cidr)) {
+            System.out.println(ERROR_INVALID_SUBNET + cidr);
+            return null;
+        }
+        Subnet subnet = new Subnet(cidr);
         network.addSubnet(subnet);
         return subnet;
+    }
+
+    private boolean isValidSubnet(String cidr) {
+        String[] parts = cidr.split("/");
+        if (parts.length != 2) {
+            return false;
+        }
+        String ip = parts[0];
+        int mask;
+        try {
+            mask = Integer.parseInt(parts[1]);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return isValidIp(ip) && mask >= MIN_SUBNET_MASK && mask <= MAX_SUBNET_MASK;
+    }
+
+    private boolean isValidIp(String ip) {
+        String[] octets = ip.split("\\.");
+        if (octets.length != 4) {
+            return false;
+        }
+        for (String octet : octets) {
+            try {
+                int value = Integer.parseInt(octet);
+                if (value < 0 || value > MAX_IP_OCTET) {
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean parseSystem(String line, Subnet subnet, Network network) {
