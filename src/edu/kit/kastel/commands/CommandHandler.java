@@ -20,6 +20,7 @@ import java.util.Map;
 public class CommandHandler {
     private static final String ERROR_MESSAGE_UNKNOWN = "Error, Unknown command.";
     private static final String ERROR_NO_NETWORK = "Error, No network loaded. Use 'load network' first.";
+    private static final String WHITESPACE_REGEX = "\\s+";
     private static final String LOAD_COMMAND = "load";
     private static final String LIST_COMMAND = "list";
     private static final String LIST_RANGE_COMMAND = "list range";
@@ -61,7 +62,7 @@ public class CommandHandler {
      * @return The output of the command execution.
      */
     public String handleCommand(String input) {
-        String[] parts = input.split("\\s+");
+        String[] parts = input.split(WHITESPACE_REGEX);
         String mainCommand = parts[0].toLowerCase();
         String subCommand = parts.length > 1 ? parts[1].toLowerCase() : EMPTY_STRING;
 
@@ -72,11 +73,10 @@ public class CommandHandler {
 
         if (command != null) {
             // Check if network is loaded for all commands except 'load' and 'quit'
-            if (!(command instanceof LoadNetwork) && !(command instanceof Quit)) {
-                if (network.getSubnets().isEmpty()) {
-                    return ERROR_NO_NETWORK;
-                }
+            if (!(command instanceof LoadNetwork) && !(command instanceof Quit) && network.getSubnets().isEmpty()) {
+                return ERROR_NO_NETWORK;
             }
+
             return command.execute(parts);
         }
         return ERROR_MESSAGE_UNKNOWN;
