@@ -18,7 +18,9 @@ public class NetworkLoader {
     private static final String SUBGRAPH_PREFIX = "subgraph";
     private static final String SYSTEM_DELIMITER = "[";
     private static final String CONNECTION_DELIMITER = "<-->";
+    private static final String EMPTY_SPACE = " ";
     private static final String ROUTER_IDENTIFIER = "Router";
+    private static final String DEFAULT_GATEWAY = "0.0.0.0";
     private static final String ERROR_PARSE_SUBNET = "Error, parsing subnet: ";
     private static final String ERROR_PARSE_SYSTEM = "Error, parsing system: ";
     private static final String ERROR_PARSE_CONNECTION = "Error, parsing connection: ";
@@ -77,7 +79,7 @@ public class NetworkLoader {
     }
 
     private Subnet parseSubnet(String line, Network network) {
-        String[] parts = line.split(" ");
+        String[] parts = line.split(EMPTY_SPACE);
         if (parts.length != 2) {
             System.out.println(ERROR_PARSE_SUBNET + line);
             return null;
@@ -126,7 +128,7 @@ public class NetworkLoader {
     }
 
     private boolean isValidIp(String ip) {
-        if (ip.equals("0.0.0.0")) { // Allow the default gateway.
+        if (ip.equals(DEFAULT_GATEWAY)) { // Allow the default gateway.
             return true;
         }
         String[] octets = ip.split("\\.");
@@ -179,7 +181,7 @@ public class NetworkLoader {
     }
 
     private String parseConnection(String line, Network network) {
-        String[] parts = line.split("<-->", 2);
+        String[] parts = line.split(CONNECTION_DELIMITER, 2);
         if (parts.length != 2) {
             return ERROR_PARSE_CONNECTION + line;
         }
@@ -224,18 +226,18 @@ public class NetworkLoader {
         // If both systems are in the same subnet, the connection must be weighted
         if (system1.getSubnet().equals(system2.getSubnet())) {
             if (weight == null) {
-                return ERROR_UNWEIGHTED_CONNECTION + system1.getName() + " <--> " + system2.getName();
+                return ERROR_UNWEIGHTED_CONNECTION + system1.getName() + CONNECTION_DELIMITER + system2.getName();
             }
             return null;
         }
         // If both systems are routers, the connection is valid but must not be weighted
         if (system1 instanceof Router && system2 instanceof Router) {
             if (weight != null) {
-                return ERROR_WEIGHTED_INTER_SUBNET + system1.getName() + " <--> " + system2.getName();
+                return ERROR_WEIGHTED_INTER_SUBNET + system1.getName() + CONNECTION_DELIMITER + system2.getName();
             }
             return null;
         }
         // Otherwise, the connection is invalid
-        return ERROR_PARSE_CONNECTION + system1.getName() + " <--> " + system2.getName();
+        return ERROR_PARSE_CONNECTION + system1.getName() + CONNECTION_DELIMITER + system2.getName();
     }
 }
