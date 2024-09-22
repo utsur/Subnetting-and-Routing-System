@@ -181,10 +181,28 @@ public class NetworkLoader {
         Systems system2 = network.getSystemByName(system2Name);
 
         if (system1 != null && system2 != null) {
+            // Check if the connection is valid
+            if (!isValidConnection(system1, system2)) {
+                System.out.println("Error, Invalid connection: " + line);
+                return false;
+            }
             network.addConnection(new Connection(system1, system2, weight));
             return true;
         }
 
+        return false;
+    }
+
+    private boolean isValidConnection(Systems system1, Systems system2) {
+        // If both systems are in the same subnet, the connection is valid
+        if (system1.getSubnet().equals(system2.getSubnet())) {
+            return true;
+        }
+        // If both systems are routers, the connection is valid
+        if (system1 instanceof Router && system2 instanceof Router) {
+            return true;
+        }
+        // Otherwise, the connection is invalid
         return false;
     }
 }
