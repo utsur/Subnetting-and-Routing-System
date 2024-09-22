@@ -15,13 +15,6 @@ import java.util.List;
  * @author utsur
  */
 public class NetworkLoader {
-    private static final String SUBGRAPH_PREFIX = "subgraph";
-    private static final String SYSTEM_DELIMITER = "[";
-    private static final String CONNECTION_DELIMITER = "<-->";
-    private static final String WEIGHT_DELIMITER = "|";
-    private static final String EMPTY_SPACE = " ";
-    private static final String ROUTER_IDENTIFIER = "Router";
-    private static final String DEFAULT_GATEWAY = "0.0.0.0";
     private static final String ERROR_PARSE_SUBNET = "Error, parsing subnet: ";
     private static final String ERROR_PARSE_SYSTEM = "Error, parsing system: ";
     private static final String ERROR_PARSE_CONNECTION = "Error, parsing connection: ";
@@ -32,6 +25,19 @@ public class NetworkLoader {
     private static final String ERROR_UNWEIGHTED_CONNECTION = "Error, Connection inside subnet must be weighted: ";
     private static final String ERROR_WEIGHTED_INTER_SUBNET = "Error, Connection between routers must not be weighted: ";
     private static final String ERROR_ROUTER_NOT_FIRST_IP = "Error, Router must have the first IP address in the subnet: ";
+    private static final String SUBGRAPH_PREFIX = "subgraph";
+    private static final String SYSTEM_DELIMITER = "[";
+    private static final String CONNECTION_DELIMITER = "<-->";
+    private static final String WEIGHT_DELIMITER = "|";
+    private static final String EMPTY_SPACE = " ";
+    private static final String ROUTER_IDENTIFIER = "Router";
+    private static final String DEFAULT_GATEWAY = "0.0.0.0";
+    private static final String OVERLAPPING_SUBNET_MESSAGE = " overlaps with ";
+    private static final String CIDR_DELIMITER = "/";
+    private static final String IP_DELIMITER = "\\.";
+    private static final String SYSTEM_NAME_IP_DELIMITER = "\\[|\\]";
+    private static final String ROUTER_IP_ERROR_FORMAT = "%s%s (should be %s)";
+    private static final int IP_OCTET_COUNT = 4;
     private static final int MAX_IP_OCTET = 255;
     private static final int MIN_SUBNET_MASK = 0;
     private static final int MAX_SUBNET_MASK = 31;
@@ -95,7 +101,7 @@ public class NetworkLoader {
         // Check for overlapping subnets
         for (Subnet existingSubnet : network.getSubnets()) {
             if (isOverlapping(newSubnet, existingSubnet)) {
-                System.out.println(ERROR_OVERLAPPING_SUBNET + cidr + " overlaps with " + existingSubnet.getCidr());
+                System.out.println(ERROR_OVERLAPPING_SUBNET + cidr + OVERLAPPING_SUBNET_MESSAGE + existingSubnet.getCidr());
                 return null;
             }
         }
@@ -105,7 +111,7 @@ public class NetworkLoader {
     }
 
     private boolean isValidSubnet(String cidr) {
-        String[] parts = cidr.split("/");
+        String[] parts = cidr.split(CIDR_DELIMITER);
         if (parts.length != 2) {
             return false;
         }
@@ -132,8 +138,8 @@ public class NetworkLoader {
         if (ip.equals(DEFAULT_GATEWAY)) { // Allow the default gateway.
             return true;
         }
-        String[] octets = ip.split("\\.");
-        if (octets.length != 4) {
+        String[] octets = ip.split(IP_DELIMITER);
+        if (octets.length != IP_OCTET_COUNT) {
             return false;
         }
         for (String octet : octets) {
@@ -150,7 +156,7 @@ public class NetworkLoader {
     }
 
     private boolean parseSystem(String line, Subnet subnet, Network network) {
-        String[] parts = line.split("\\[|\\]");
+        String[] parts = line.split(SYSTEM_NAME_IP_DELIMITER);
         if (parts.length != 2) {
             System.out.println(ERROR_PARSE_SYSTEM + line);
             return false;
@@ -168,7 +174,7 @@ public class NetworkLoader {
         if (name.contains(ROUTER_IDENTIFIER)) {
             String firstUsableIp = subnet.getFirstUsableIp();
             if (!ip.equals(firstUsableIp)) {
-                System.out.println(String.format("%s%s (should be %s)", ERROR_ROUTER_NOT_FIRST_IP, ip, firstUsableIp));
+                System.out.println(String.format(ROUTER_IP_ERROR_FORMAT, ERROR_ROUTER_NOT_FIRST_IP, ip, firstUsableIp));
             }
             system = new Router(name, ip, subnet);
         } else {
