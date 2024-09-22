@@ -26,6 +26,8 @@ public class NetworkLoader {
     private static final String ERROR_OUTSIDE_SUBNET = "Error, system outside subnet: ";
     private static final String ERROR_INVALID_SUBNET = "Error, Invalid subnet: ";
     private static final String ERROR_OVERLAPPING_SUBNET = "Error, Overlapping subnet: ";
+    private static final String ERROR_UNWEIGHTED_CONNECTION = "Error, Connection inside subnet must be weighted: ";
+
     private static final String ERROR_ROUTER_NOT_FIRST_IP = "Error, Router must have the first IP address in the subnet: ";
     private static final int MAX_IP_OCTET = 255;
     private static final int MIN_SUBNET_MASK = 0;
@@ -207,7 +209,7 @@ public class NetworkLoader {
 
         if (system1 != null && system2 != null) {
             // Check if the connection is valid
-            if (!isValidConnection(system1, system2)) {
+            if (!isValidConnection(system1, system2, weight)) {
                 return false;
             }
             network.addConnection(new Connection(system1, system2, weight));
@@ -217,16 +219,21 @@ public class NetworkLoader {
         return false;
     }
 
-    private boolean isValidConnection(Systems system1, Systems system2) {
-        // If both systems are in the same subnet, the connection is valid
+    private boolean isValidConnection(Systems system1, Systems system2, Integer weight) {
+        // If both systems are in the same subnet, the connection must be weighted
         if (system1.getSubnet().equals(system2.getSubnet())) {
+            if (weight == null) {
+                System.out.println(ERROR_UNWEIGHTED_CONNECTION + system1.getName() + " <--> " + system2.getName());
+                return false;
+            }
             return true;
         }
-        // If both systems are routers, the connection is valid
+        // If both systems are routers, the connection is valid (and can be unweighted)
         if (system1 instanceof Router && system2 instanceof Router) {
             return true;
         }
         // Otherwise, the connection is invalid
+        System.out.println(ERROR_PARSE_CONNECTION + system1.getName() + " <--> " + system2.getName());
         return false;
     }
 }
