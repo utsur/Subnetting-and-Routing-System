@@ -16,7 +16,8 @@ public final class IpAddressComparator {
      * This methode is used as a helper method in the ListSystems class.
      * @param ip1 The first IP address.
      * @param ip2 The second IP address.
-     * @return A negative integer, zero, or a positive integer as the first IP address is less than, equal to, or greater than the second IP address.
+     * @return A negative integer, zero, or a positive integer as the first IP address is less than,
+     *     equal to, or greater than the second IP address.
      */
     public static int compareIpAddresses(String ip1, String ip2) {
         String[] parts1 = ip1.split("\\.");
