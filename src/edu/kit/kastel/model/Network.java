@@ -47,8 +47,7 @@ public class Network {
         do {
             changed = false;
             for (Systems system : systemsByIp.values()) {
-                if (system instanceof Router) {
-                    Router router = (Router) system;
+                if (system instanceof Router router) {
                     Map<String, List<String>> oldTable = new HashMap<>(router.getRoutingTable());
 
                     for (Connection conn : connections) {
@@ -191,14 +190,6 @@ public class Network {
      */
     public Set<Connection> getConnections() {
         return new HashSet<>(connections);
-    }
-
-    private void resetBGPTables() {
-        for (Systems system : systemsByIp.values()) {
-            if (system instanceof Router) {
-                ((Router) system).resetRoutingTable();
-            }
-        }
     }
 
     /**

@@ -18,10 +18,9 @@ public class SendPacket implements Command {
     private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
     private static final String ERROR_SAME_IP = "Error, Source and destination IP addresses cannot be the same.";
     private static final String ERROR_NO_PATH = "Error, No path found between the specified systems.";
+    private static final String EMPTY_SPACE = " ";
     private static final int SECOND_ARG = 2;
     private static final int THIRD_ARG = 3;
-
-    private static final String EMPTY_SPACE = " ";
     private static final int EXPECTED_ARGS = 4;
     private final Network network;
     private final PathFinder pathFinder;

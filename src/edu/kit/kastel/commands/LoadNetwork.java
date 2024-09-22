@@ -13,6 +13,7 @@ import java.util.List;
 public class LoadNetwork implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'load network <path>'";
     private static final String NETWORK_STRING = "network";
+    private static final int FORMAT_ARGS = 3;
     private final Network network;
     private final NetworkLoader loader;
 
@@ -27,7 +28,7 @@ public class LoadNetwork implements Command {
 
     @Override
     public String execute(String[] args) {
-        if (args.length != 3 || !args[1].equals(NETWORK_STRING)) {
+        if (args.length != FORMAT_ARGS || !args[1].equals(NETWORK_STRING)) {
             return ERROR_FORMAT;
         }
         String path = args[2];
