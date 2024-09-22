@@ -183,7 +183,6 @@ public class NetworkLoader {
         if (system1 != null && system2 != null) {
             // Check if the connection is valid
             if (!isValidConnection(system1, system2)) {
-                System.out.println("Error, Invalid connection: " + line);
                 return false;
             }
             network.addConnection(new Connection(system1, system2, weight));
