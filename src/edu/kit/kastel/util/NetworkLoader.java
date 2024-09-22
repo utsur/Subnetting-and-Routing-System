@@ -180,6 +180,7 @@ public class NetworkLoader {
     private boolean parseConnection(String line, Network network) {
         String[] parts = line.split("<-->", 2);
         if (parts.length != 2) {
+            System.out.println(ERROR_PARSE_CONNECTION + line);
             return false;
         }
 
@@ -192,12 +193,14 @@ public class NetworkLoader {
         if (system2NameAndWeight.startsWith("|")) {
             int endWeightIndex = system2NameAndWeight.indexOf("|", 1);
             if (endWeightIndex == -1) {
+                System.out.println(ERROR_PARSE_CONNECTION + line);
                 return false;
             }
             try {
                 weight = Integer.parseInt(system2NameAndWeight.substring(1, endWeightIndex).trim());
                 system2Name = system2NameAndWeight.substring(endWeightIndex + 1).trim();
             } catch (NumberFormatException e) {
+                System.out.println(ERROR_PARSE_CONNECTION + line);
                 return false;
             }
         } else {
@@ -208,32 +211,32 @@ public class NetworkLoader {
         Systems system2 = network.getSystemByName(system2Name);
 
         if (system1 != null && system2 != null) {
-            // Check if the connection is valid
-            if (!isValidConnection(system1, system2, weight)) {
+            String errorMessage = isValidConnection(system1, system2, weight);
+            if (errorMessage != null) {
+                System.out.println(errorMessage);
                 return false;
             }
             network.addConnection(new Connection(system1, system2, weight));
             return true;
         }
 
+        System.out.println(ERROR_PARSE_CONNECTION + line);
         return false;
     }
 
-    private boolean isValidConnection(Systems system1, Systems system2, Integer weight) {
+    private String isValidConnection(Systems system1, Systems system2, Integer weight) {
         // If both systems are in the same subnet, the connection must be weighted
         if (system1.getSubnet().equals(system2.getSubnet())) {
             if (weight == null) {
-                System.out.println(ERROR_UNWEIGHTED_CONNECTION + system1.getName() + " <--> " + system2.getName());
-                return false;
+                return ERROR_UNWEIGHTED_CONNECTION + system1.getName() + " <--> " + system2.getName();
             }
-            return true;
+            return null;
         }
         // If both systems are routers, the connection is valid (and can be unweighted)
         if (system1 instanceof Router && system2 instanceof Router) {
-            return true;
+            return null;
         }
         // Otherwise, the connection is invalid
-        System.out.println(ERROR_PARSE_CONNECTION + system1.getName() + " <--> " + system2.getName());
-        return false;
+        return ERROR_PARSE_CONNECTION + system1.getName() + " <--> " + system2.getName();
     }
 }
