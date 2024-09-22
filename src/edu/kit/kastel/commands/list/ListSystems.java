@@ -19,6 +19,7 @@ public class ListSystems implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'list systems <subnet>'";
     private static final String ERROR_SUBNET = "Error, Subnet not found.";
     private static final String EMPTY_SPACE = " ";
+    private static final int FORMAT_ARGS = 3;
     private final Network network;
 
     /**
@@ -31,7 +32,7 @@ public class ListSystems implements Command {
 
     @Override
     public String execute(String[] args) {
-        if (args.length != 3) {
+        if (args.length != FORMAT_ARGS) {
             return ERROR_FORMAT;
         }
         String subnetCidr = args[2];

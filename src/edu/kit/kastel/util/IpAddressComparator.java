@@ -6,6 +6,7 @@ package edu.kit.kastel.util;
  * @author utsur
  */
 public final class IpAddressComparator {
+    private static final String DOT = ".";
 
     private IpAddressComparator() {
         // Private constructor to prevent instantiation
@@ -44,8 +45,8 @@ public final class IpAddressComparator {
         String[] parts1 = cidr1.split("\\.|/");
         String[] parts2 = cidr2.split("\\.|/");
 
-        int comparison = compareIpAddresses(parts1[0] + "." + parts1[1] + "." + parts1[2] + "." + parts1[3],
-            parts2[0] + "." + parts2[1] + "." + parts2[2] + "." + parts2[3]);
+        int comparison = compareIpAddresses(parts1[0] + DOT + parts1[1] + DOT + parts1[2] + DOT + parts1[3],
+            parts2[0] + DOT + parts2[1] + DOT + parts2[2] + DOT + parts2[3]);
 
         if (comparison == 0) {
             return Integer.compare(Integer.parseInt(parts1[4]), Integer.parseInt(parts2[4]));
