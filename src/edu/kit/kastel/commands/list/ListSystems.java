@@ -5,9 +5,9 @@ import edu.kit.kastel.model.Network;
 import edu.kit.kastel.model.Router;
 import edu.kit.kastel.model.Subnet;
 import edu.kit.kastel.model.Systems;
+import edu.kit.kastel.util.IpAddressComparator;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,6 +18,7 @@ import java.util.List;
 public class ListSystems implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'list systems <subnet>'";
     private static final String ERROR_SUBNET = "Error, Subnet not found.";
+    private static final String EMPTY_SPACE = " ";
     private final Network network;
 
     /**
@@ -47,30 +48,17 @@ public class ListSystems implements Command {
                 break;
             }
         }
-        // Add other IPs
+        // Add other IPs.
         for (Systems system : subnet.getSystems()) {
             if (!(system instanceof Router)) {
                 ipAddresses.add(system.getIpAddress());
             }
         }
-        // Sort non-router IPs
+        // Sort non-router IPs.
         if (ipAddresses.size() > 1) {
-            Collections.sort(ipAddresses.subList(1, ipAddresses.size()), this::compareIpAddresses);
+            ipAddresses.subList(1, ipAddresses.size()).sort(IpAddressComparator::compareIpAddresses);
         }
 
-        return String.join(" ", ipAddresses);
-    }
-
-    private int compareIpAddresses(String ip1, String ip2) {
-        String[] parts1 = ip1.split("\\.");
-        String[] parts2 = ip2.split("\\.");
-        for (int i = 0; i < 4; i++) {
-            int octet1 = Integer.parseInt(parts1[i]);
-            int octet2 = Integer.parseInt(parts2[i]);
-            if (octet1 != octet2) {
-                return Integer.compare(octet1, octet2);
-            }
-        }
-        return 0;
+        return String.join(EMPTY_SPACE, ipAddresses);
     }
 }
