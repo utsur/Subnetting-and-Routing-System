@@ -55,6 +55,9 @@ public class PathFinder {
 
         while (!unvisitedSystems.isEmpty()) {
             Systems current = getMinDistanceSystem(unvisitedSystems, distances);
+            if (current == null) {
+                break; // No path found
+            }
             unvisitedSystems.remove(current);
 
             if (current.equals(destination)) {
