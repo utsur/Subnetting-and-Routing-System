@@ -26,7 +26,7 @@ public class NetworkLoader {
     private static final String ERROR_OUTSIDE_SUBNET = "Error, system outside subnet: ";
     private static final String ERROR_INVALID_SUBNET = "Error, Invalid subnet: ";
     private static final int MAX_IP_OCTET = 255;
-    private static final int MIN_SUBNET_MASK = 1;
+    private static final int MIN_SUBNET_MASK = 0;
     private static final int MAX_SUBNET_MASK = 31;
 
     /**
@@ -103,6 +103,9 @@ public class NetworkLoader {
     }
 
     private boolean isValidIp(String ip) {
+        if (ip.equals("0.0.0.0")) { // Allow the default gateway.
+            return true;
+        }
         String[] octets = ip.split("\\.");
         if (octets.length != 4) {
             return false;
