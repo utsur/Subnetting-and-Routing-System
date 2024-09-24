@@ -22,8 +22,6 @@ public class NetworkLoader {
     private static final String ERROR_OUTSIDE_SUBNET = "Error, system outside subnet: ";
     private static final String ERROR_INVALID_SUBNET = "Error, Invalid subnet: ";
     private static final String ERROR_OVERLAPPING_SUBNET = "Error, Overlapping subnet: ";
-    private static final String ERROR_UNWEIGHTED_CONNECTION = "Error, Connection inside subnet must be weighted: ";
-    private static final String ERROR_WEIGHTED_INTER_SUBNET = "Error, Connection between routers must not be weighted: ";
     private static final String ERROR_ROUTER_NOT_FIRST_IP = "Error, Router must have the first IP address in the subnet: ";
     private static final String SUBGRAPH_PREFIX = "subgraph";
     private static final String SYSTEM_DELIMITER = "[";
@@ -31,16 +29,9 @@ public class NetworkLoader {
     private static final String WEIGHT_DELIMITER = "|";
     private static final String EMPTY_SPACE = " ";
     private static final String ROUTER_IDENTIFIER = "Router";
-    private static final String DEFAULT_GATEWAY = "0.0.0.0";
     private static final String OVERLAPPING_SUBNET_MESSAGE = " overlaps with ";
-    private static final String CIDR_DELIMITER = "/";
-    private static final String IP_DELIMITER = "\\.";
     private static final String SYSTEM_NAME_IP_DELIMITER = "\\[|\\]";
     private static final String ROUTER_IP_ERROR_FORMAT = "%s%s (should be %s)";
-    private static final int IP_OCTET_COUNT = 4;
-    private static final int MAX_IP_OCTET = 255;
-    private static final int MIN_SUBNET_MASK = 0;
-    private static final int MAX_SUBNET_MASK = 31;
 
     /**
      * Load a network from a file.
@@ -84,75 +75,29 @@ public class NetworkLoader {
 
         return network;
     }
-
+    // Helper methods to parse the different network parts.
     private Subnet parseSubnet(String line, Network network) {
         String[] parts = line.split(EMPTY_SPACE);
         if (parts.length != 2) {
             System.out.println(ERROR_PARSE_SUBNET + line);
             return null;
-        }
+        } // Check if the subnet is valid.
         String cidr = parts[1];
-        if (!isValidSubnet(cidr)) {
+        if (!NetworkValidator.isValidSubnet(cidr)) {
             System.out.println(ERROR_INVALID_SUBNET + cidr);
             return null;
         }
         Subnet newSubnet = new Subnet(cidr);
-
         // Check for overlapping subnets
         for (Subnet existingSubnet : network.getSubnets()) {
-            if (isOverlapping(newSubnet, existingSubnet)) {
+            if (NetworkValidator.isOverlapping(newSubnet, existingSubnet)) {
                 System.out.println(ERROR_OVERLAPPING_SUBNET + cidr + OVERLAPPING_SUBNET_MESSAGE + existingSubnet.getCidr());
                 return null;
             }
         }
-
+        // Add the subnet to the network.
         network.addSubnet(newSubnet);
         return newSubnet;
-    }
-
-    private boolean isValidSubnet(String cidr) {
-        String[] parts = cidr.split(CIDR_DELIMITER);
-        if (parts.length != 2) {
-            return false;
-        }
-        String ip = parts[0];
-        int mask;
-        try {
-            mask = Integer.parseInt(parts[1]);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-        return isValidIp(ip) && mask >= MIN_SUBNET_MASK && mask <= MAX_SUBNET_MASK;
-    }
-
-    private boolean isOverlapping(Subnet subnet1, Subnet subnet2) {
-        long start1 = subnet1.getFirstIpAsLong();
-        long end1 = subnet1.getLastIpAsLong();
-        long start2 = subnet2.getFirstIpAsLong();
-        long end2 = subnet2.getLastIpAsLong();
-
-        return (start1 <= end2) && (start2 <= end1);
-    }
-
-    private boolean isValidIp(String ip) {
-        if (ip.equals(DEFAULT_GATEWAY)) { // Allow the default gateway.
-            return true;
-        }
-        String[] octets = ip.split(IP_DELIMITER);
-        if (octets.length != IP_OCTET_COUNT) {
-            return false;
-        }
-        for (String octet : octets) {
-            try {
-                int value = Integer.parseInt(octet);
-                if (value < 0 || value > MAX_IP_OCTET) {
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private boolean parseSystem(String line, Subnet subnet, Network network) {
@@ -164,12 +109,12 @@ public class NetworkLoader {
 
         String name = parts[0].trim();
         String ip = parts[1].trim();
-
+        // Check if the IP is in the subnet.
         if (!subnet.isIpInSubnet(ip)) {
             System.out.println(String.format(ERROR_IP_NOT_IN_SUBNET, ip, subnet.getCidr()));
             return false;
         }
-
+        // Create the system.
         Systems system;
         if (name.contains(ROUTER_IDENTIFIER)) {
             String firstUsableIp = subnet.getFirstUsableIp();
@@ -180,7 +125,7 @@ public class NetworkLoader {
         } else {
             system = new Computer(name, ip, subnet);
         }
-
+        // Add the system to the subnet and network.
         subnet.addSystem(system);
         network.addSystem(system);
         return true;
@@ -197,7 +142,7 @@ public class NetworkLoader {
 
         String system2Name;
         Integer weight = null;
-
+        // Check if the connection is weighted.
         if (system2NameAndWeight.startsWith(WEIGHT_DELIMITER)) {
             int endWeightIndex = system2NameAndWeight.indexOf(WEIGHT_DELIMITER, 1);
             if (endWeightIndex == -1) {
@@ -215,35 +160,16 @@ public class NetworkLoader {
 
         Systems system1 = network.getSystemByName(system1Name);
         Systems system2 = network.getSystemByName(system2Name);
-
+        // Check if the systems exist.
         if (system1 != null && system2 != null) {
-            String errorMessage = isValidConnection(system1, system2, weight);
+            String errorMessage = NetworkValidator.isValidConnection(system1, system2, weight);
             if (errorMessage != null) {
                 return errorMessage;
-            }
+            } // Add the connection to the network.
             network.addConnection(new Connection(system1, system2, weight));
             return null;
         }
-
+        // If the systems do not exist, return an error message.
         return ERROR_PARSE_CONNECTION + line;
-    }
-
-    private String isValidConnection(Systems system1, Systems system2, Integer weight) {
-        // If both systems are in the same subnet, the connection must be weighted
-        if (system1.getSubnet().equals(system2.getSubnet())) {
-            if (weight == null) {
-                return ERROR_UNWEIGHTED_CONNECTION + system1.getName() + CONNECTION_DELIMITER + system2.getName();
-            }
-            return null;
-        }
-        // If both systems are routers, the connection is valid but must not be weighted
-        if (system1 instanceof Router && system2 instanceof Router) {
-            if (weight != null) {
-                return ERROR_WEIGHTED_INTER_SUBNET + system1.getName() + CONNECTION_DELIMITER + system2.getName();
-            }
-            return null;
-        }
-        // Otherwise, the connection is invalid
-        return ERROR_PARSE_CONNECTION + system1.getName() + CONNECTION_DELIMITER + system2.getName();
     }
 }

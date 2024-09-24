@@ -45,6 +45,7 @@ public class PathFinder {
         }
     }
     // The following methods are private helper methods for the path finding algorithm.
+    // This methode is used to find the shortest path between two systems, using the Dijkstra algorithm in the same subnet (intra).
     private List<Systems> findPathInSubnet(Systems source, Systems destination) {
         Map<Systems, Integer> distances = new HashMap<>();
         Map<Systems, Systems> previousSystems = new HashMap<>();
@@ -61,11 +62,11 @@ public class PathFinder {
                 break; // No path found.
             }
             unvisitedSystems.remove(current);
-
+            // Stop if the destination system is reached.
             if (current.equals(destination)) {
                 return reconstructPath(previousSystems, destination);
             }
-
+            // Update the distances to the neighbors of the current system.
             for (Connection connection : getConnections(current)) {
                 Systems neighbor = connection.getOtherSystem(current);
                 if (neighbor.getSubnet().equals(source.getSubnet())) {
@@ -81,6 +82,8 @@ public class PathFinder {
         return Collections.emptyList(); // No path found.
     }
 
+    // This methode is used to find the shortest path between two systems, using the BGP tables in different subnets (inter).
+    // If there are multiple shortest paths, the one we choose the path as required by the assignment.
     private List<Systems> findPathAcrossSubnets(Systems source, Systems destination) {
         // Find path from source to source subnets router.
         List<Systems> sourceToRouter = findPathInSubnet(source, source.getSubnet().getRouter());
