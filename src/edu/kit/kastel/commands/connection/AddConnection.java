@@ -80,9 +80,9 @@ public class AddConnection implements Command {
         }
         return null;
     }
-
+    // Helper method to validate the connection.
     private String validateConnection(Systems system1, Systems system2, Integer weight) {
-        // Check if the systems are in the same subnet.
+        // Check if the systems are in the same subnet. If they are, a weight must be provided.
         if (system1.getSubnet() == system2.getSubnet()) {
             if (weight == null) {
                 return ERROR_FORMAT;
