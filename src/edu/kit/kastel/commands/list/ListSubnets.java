@@ -21,7 +21,7 @@ public class ListSubnets implements Command {
     private final Network network;
 
     /**
-     * This constructor creates a new ListSubnets object with the given network.
+     * This constructor creates a new ListSubnets command with the given network.
      * @param network The network to list subnets from.
      */
     public ListSubnets(Network network) {
@@ -33,10 +33,12 @@ public class ListSubnets implements Command {
         if (args.length != 2 || !args[1].equals(SUBNETS_STRING)) {
             return ERROR_FORMAT;
         }
+        // Get the CIDRs of all subnets in the network.
         List<String> subnetCIDRs = new ArrayList<>();
         for (Subnet subnet : network.getSubnets()) {
             subnetCIDRs.add(subnet.getCidr());
         }
+        // Sort the subnets by their CIDR and return them.
         subnetCIDRs.sort(IpAddressComparator::compareSubnetCIDRs);
         return String.join(EMPTY_SPACE, subnetCIDRs);
     }

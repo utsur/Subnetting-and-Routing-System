@@ -29,6 +29,7 @@ public class ListRange implements Command {
         if (args.length != ARGUMENT_LENGTH) {
             return ERROR_FORMAT;
         }
+        // Get the first and last IP address of the subnet.
         String subnetCidr = args[2];
         Subnet subnet = network.getSubnetByCidr(subnetCidr);
         if (subnet == null) {

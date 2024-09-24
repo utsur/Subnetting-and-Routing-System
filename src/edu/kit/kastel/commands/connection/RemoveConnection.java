@@ -31,21 +31,20 @@ public class RemoveConnection implements Command {
         if (args.length != EXPECTED_ARGS) {
             return ERROR_FORMAT;
         }
-
+        // Get the systems by their IP addresses.
         String ip1 = args[IP1];
         String ip2 = args[IP2];
-
         Systems system1 = network.getSystemByIp(ip1);
         Systems system2 = network.getSystemByIp(ip2);
-
+        // Check if the systems exist.
         if (system1 == null || system2 == null) {
             return ERROR_INVALID_IP;
         }
-
+        // Check if a connection exists between the two systems.
         if (!network.connectionExists(system1, system2)) {
             return ERROR_NO_CONNECTION;
         }
-
+        // Remove the connection between the two systems.
         network.removeConnection(system1, system2);
         return null;
     }

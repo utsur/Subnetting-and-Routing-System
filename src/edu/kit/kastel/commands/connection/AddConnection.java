@@ -40,44 +40,60 @@ public class AddConnection implements Command {
 
         String ip1 = args[IP1];
         String ip2 = args[IP2];
-
+        // Check if the IP addresses are the same.
         if (ip1.equals(ip2)) {
             return ERROR_SAME_IP;
         }
-
-        Integer weight = null;
-
-        if (args.length == MAX_ARGS) {
-            try {
-                weight = Integer.parseInt(args[WEIGHT_ARGS]);
-            } catch (NumberFormatException e) {
-                return ERROR_FORMAT;
-            }
+        // Check if the weight is provided using the parseWeight helper method.
+        Integer weight = parseWeight(args);
+        if (weight == null && args.length == MAX_ARGS) {
+            return ERROR_FORMAT;
         }
-
+        // Get the systems by their IP addresses.
         Systems system1 = network.getSystemByIp(ip1);
         Systems system2 = network.getSystemByIp(ip2);
-
+        // Check if the systems exist.
         if (system1 == null || system2 == null) {
             return ERROR_INVALID_IP;
         }
-
+        // Check if a connection already exists between the two systems.
         if (network.connectionExists(system1, system2)) {
             return ERROR_CONNECTION_EXISTS;
         }
+        // Checks if the connection is valid.
+        String validationError = validateConnection(system1, system2, weight);
+        if (validationError != null) {
+            return validationError;
+        }
+        // Add the connection between the two systems.
+        network.addConnection(new Connection(system1, system2, weight));
+        return null;
+    }
+    // Helper method to parse the weight from the arguments.
+    private Integer parseWeight(String[] args) {
+        if (args.length == MAX_ARGS) {
+            try {
+                return Integer.parseInt(args[WEIGHT_ARGS]);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
+    }
 
+    private String validateConnection(Systems system1, Systems system2, Integer weight) {
+        // Check if the systems are in the same subnet.
         if (system1.getSubnet() == system2.getSubnet()) {
             if (weight == null) {
                 return ERROR_FORMAT;
             }
         } else {
+            // Check if the systems are routers. Only routers can have connections to other subnets.
             if (!(system1 instanceof Router && system2 instanceof Router)) {
                 return ERROR_DIFFERENT_SUBNET;
             }
-            weight = null;
         }
-
-        network.addConnection(new Connection(system1, system2, weight));
+        // No validation error.
         return null;
     }
 }
