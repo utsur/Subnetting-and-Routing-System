@@ -37,23 +37,23 @@ public class RemoveComputer extends AbstractComputerCommand {
         }
 
         String ip = args[NUMBER_OF_ARGUMENTS];
-
+        // Check if the IP address is valid.
         Systems system = network.getSystemByIp(ip);
         if (system == null) {
             return ERROR_INVALID_IP;
         }
-
+        // Check if the system is a computer.
         if (!(system instanceof Computer)) {
             return ERROR_NOT_COMPUTER;
         }
-
+        // Check if the IP address is in the subnet.
         if (system.getSubnet() != subnet) {
             return ERROR_NOT_IN_SUBNET;
         }
-
+        // Remove the computer from the network and subnet.
         network.removeSystem(system);
         subnet.removeSystem(system);
-
+        // Return null to indicate that the command was executed successfully.
         return null;
     }
 }

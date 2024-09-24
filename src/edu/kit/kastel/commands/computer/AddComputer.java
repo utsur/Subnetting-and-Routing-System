@@ -19,7 +19,7 @@ public class AddComputer extends AbstractComputerCommand {
     private static final int NUMBER_OF_ARGUMENTS = 3;
 
     /**
-     * Creates a new AddComputer with the given network.
+     * Creates a new AddComputer command with the given network.
      * @param network The network to add the computer to.
      */
     public AddComputer(Network network) {
@@ -34,19 +34,19 @@ public class AddComputer extends AbstractComputerCommand {
         }
 
         String ip = args[NUMBER_OF_ARGUMENTS];
-
+        // Check if the IP address already exists in the network.
         if (network.getSystemByIp(ip) != null) {
             return ERROR_IP_EXISTS;
         }
-
+        // Check if the IP address is in the subnet.
         if (!subnet.isIpInSubnet(ip)) {
             return ERROR_IP_NOT_IN_SUBNET;
         }
-
+        // Create a new computer and add it to the network and subnet.
         Computer computer = new Computer(PC_NAME + ip.replace(DOT, UNDERLINE), ip, subnet);
         network.addSystem(computer);
         subnet.addSystem(computer);
-
+        // Return null to indicate that the command was executed successfully.
         return null;
     }
 }

@@ -5,11 +5,7 @@ import edu.kit.kastel.model.Network;
 import edu.kit.kastel.model.Subnet;
 
 /**
- * This class represents the command to add or remove a computer from the network.
- * The computer is added or removed from the specified subnet with the given IP address.
- * If the IP address does not belong to a computer, an error message is returned.
- * If the subnet or IP address is invalid, an error message is returned.
- * If the command format is invalid, an error message is returned.
+ * This abstract class provides shared functionality for computer related commands.
  * @author utsur
  */
 public abstract class AbstractComputerCommand implements Command {
@@ -28,6 +24,8 @@ public abstract class AbstractComputerCommand implements Command {
 
     /**
      * Validates the subnet and returns it if it is valid.
+     * If the IP address does not belong to a computer,the subnet or IP address is invalid,
+     * or the command format is invalid, an error message is returned.
      * @param args The arguments of the command.
      * @return The subnet if it is valid, null otherwise.
      */
