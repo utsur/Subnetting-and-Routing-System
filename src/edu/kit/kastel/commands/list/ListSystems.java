@@ -23,7 +23,7 @@ public class ListSystems implements Command {
     private final Network network;
 
     /**
-     * This constructor creates a new ListSystems object with the given network.
+     * This constructor creates a new ListSystems command with the given network.
      * @param network The network to list systems from.
      */
     public ListSystems(Network network) {
@@ -40,26 +40,21 @@ public class ListSystems implements Command {
         if (subnet == null) {
             return ERROR_SUBNET;
         }
-
-        List<String> ipAddresses = new ArrayList<>();
-        // Add router IP first if it exists
+        // We differentiate the routers from the computer systems.
+        List<String> routerIps = new ArrayList<>();
+        List<String> otherIps = new ArrayList<>();
+        // Sort the systems by their IP addresses.
         for (Systems system : subnet.getSystems()) {
             if (system instanceof Router) {
-                ipAddresses.add(system.getIpAddress());
-                break;
+                routerIps.add(system.getIpAddress());
+            } else {
+                otherIps.add(system.getIpAddress());
             }
-        }
-        // Add other IPs.
-        for (Systems system : subnet.getSystems()) {
-            if (!(system instanceof Router)) {
-                ipAddresses.add(system.getIpAddress());
-            }
-        }
-        // Sort non-router IPs.
-        if (ipAddresses.size() > 1) {
-            ipAddresses.subList(1, ipAddresses.size()).sort(IpAddressComparator::compareIpAddresses);
         }
 
-        return String.join(EMPTY_SPACE, ipAddresses);
+        otherIps.sort(IpAddressComparator::compareIpAddresses);
+        routerIps.addAll(otherIps);
+        // Return the list of systems.
+        return String.join(EMPTY_SPACE, routerIps);
     }
 }

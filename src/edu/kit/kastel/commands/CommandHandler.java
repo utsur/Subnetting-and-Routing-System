@@ -14,7 +14,8 @@ import java.util.Map;
 
 /**
  * This class is responsible for handling commands and executing them.
- * It contains a map of commands and their corresponding command objects.
+ * This class acts as a central point for processing all user commands,
+ * mapping them to their respective Command objects and executing them.
  * @author utsur
  */
 public class CommandHandler {
@@ -33,7 +34,6 @@ public class CommandHandler {
     private static final String  QUIT_COMMAND = "quit";
     private static final String EMPTY_SPACE = " ";
     private static final String EMPTY_STRING = "";
-
     private final Map<String, Command> commands;
     private final Network network;
 
@@ -57,9 +57,9 @@ public class CommandHandler {
     }
 
     /**
-     * This method handles the input command and executes it.
+     * Handles the input command by parsing it, finding the corresponding Command object, and executing it if valid.
      * @param input The input command to handle.
-     * @return The output of the command execution.
+     * @return The output of the command execution, or an error message if the command is nor valid.
      */
     public String handleCommand(String input) {
         String[] parts = input.split(WHITESPACE_REGEX);
@@ -76,7 +76,7 @@ public class CommandHandler {
             if (!(command instanceof LoadNetwork) && !(command instanceof Quit) && network.getSubnets().isEmpty()) {
                 return ERROR_NO_NETWORK;
             }
-
+            // Execute the command if it is valid.
             return command.execute(parts);
         }
         return ERROR_MESSAGE_UNKNOWN;

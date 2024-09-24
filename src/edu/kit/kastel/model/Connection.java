@@ -41,9 +41,9 @@ public class Connection {
     }
 
     /**
-     * Returns the other systems(...).
-     * @param system the system to find the other system for.
-     * @return the other system in the connection.
+     * Returns the other system in the connection.
+     * @param system One of the systems in the connection.
+     * @return The other system in the connection, or null if the given system is not part of this connection.
      */
     public Systems getOtherSystem(Systems system) {
         if (system.equals(getSystem1())) {

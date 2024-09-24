@@ -21,8 +21,7 @@ public class Network {
     private final Set<Connection> connections;
 
     /**
-     * Creates a new network.
-     * The network is initially empty.
+     * Creates a new empty network.
      * Subnets, systems and connections can with the commands by the user.
      */
     public Network() {
@@ -74,7 +73,7 @@ public class Network {
      */
     private boolean updateSingleRouterTable(Router router) {
         Map<String, List<String>> oldTable = new HashMap<>(router.getRoutingTable());
-
+        // Update the routing table based on the connections of the router.
         for (Connection conn : connections) {
             if (conn.getSystem1() == router || conn.getSystem2() == router) {
                 Systems neighbor = conn.getOtherSystem(router);
@@ -83,7 +82,7 @@ public class Network {
                 }
             }
         }
-
+        // Return true if the routing table was changed.
         return !oldTable.equals(router.getRoutingTable());
     }
 
@@ -213,9 +212,8 @@ public class Network {
     }
 
     /**
-     * This method updates the BGP tables of all routers in the network.
-     * It is called whenever a system is added or removed from the network.
-     * The BGP tables are updated based on the connections between the routers.
+     * Updates this network's state.
+     * This method replaces all subnets, systems, and connections.
      * @param other The network to update from.
      */
     public void updateFrom(Network other) {

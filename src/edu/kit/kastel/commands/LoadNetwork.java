@@ -8,6 +8,7 @@ import java.util.List;
 
 /**
  * Command to load a network from a file.
+ * This class handles the parsing of the load command, reading the file, and updating the network with the loaded configuration.
  * @author utsur
  */
 public class LoadNetwork implements Command {
@@ -18,8 +19,8 @@ public class LoadNetwork implements Command {
     private final NetworkLoader loader;
 
     /**
-     * Create a new LoadNetwork.
-     * @param network the network to load the data into
+     * Creates a new LoadNetwork Command.
+     * @param network the network to load the data into.
      */
     public LoadNetwork(Network network) {
         this.network = network;
@@ -32,7 +33,7 @@ public class LoadNetwork implements Command {
             return ERROR_FORMAT;
         }
         String path = args[2];
-
+        // Reading of the file content.
         List<String> fileContent = FileHelper.readAllLines(path);
         if (fileContent.isEmpty()) {
             return null; // FileHelper already printed the error message.
@@ -46,8 +47,7 @@ public class LoadNetwork implements Command {
         if (loadedNetwork == null) {
             return null; // Error messages are already printed by the loader.
         }
-
-        // Actualisation of the network after loading.
+        // Update the network after loading.
         network.updateFrom(loadedNetwork);
         network.updateBGPTables(); // Initialisation of the BGP tables.
         return null;

@@ -17,7 +17,7 @@ public class ListRange implements Command {
     private final Network network;
 
     /**
-     * This constructor creates a new ListRange object with the given network.
+     * This constructor creates a new ListRange command with the given network.
      * @param network The network to list the range from.
      */
     public ListRange(Network network) {

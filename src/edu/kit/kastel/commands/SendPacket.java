@@ -42,27 +42,26 @@ public class SendPacket implements Command {
 
         String sourceIp = args[SECOND_ARG];
         String destinationIp = args[THIRD_ARG];
-
+        // Check if source and destination IPs are the same.
         if (sourceIp.equals(destinationIp)) {
             return ERROR_SAME_IP;
         }
 
         Systems source = network.getSystemByIp(sourceIp);
         Systems destination = network.getSystemByIp(destinationIp);
-
+        // Check if source and destination IPs are valid.
         if (source == null || destination == null) {
             return ERROR_INVALID_IP;
         }
-
         List<Systems> path = pathFinder.findShortestPath(source, destination);
-
+        // Check if a path was found.
         if (path == null || path.isEmpty()) {
             return ERROR_NO_PATH;
         }
 
         return formatPath(path);
     }
-
+    // This helper method formats the path of systems into a string of IP addresses.
     private String formatPath(List<Systems> path) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < path.size(); i++) {
