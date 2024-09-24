@@ -81,13 +81,12 @@ public class PathFinder {
     }
 
     private List<Systems> findPathAcrossSubnets(Systems source, Systems destination) {
-        List<Systems> path = new ArrayList<>();
         // Find path from source to source subnets router
         List<Systems> sourceToRouter = findPathInSubnet(source, source.getSubnet().getRouter());
         if (sourceToRouter == null) {
             return Collections.emptyList();
         }
-        path.addAll(sourceToRouter);
+        List<Systems> path = new ArrayList<>(sourceToRouter);
         // Find path between routers using BGP tables
         Router currentRouter = source.getSubnet().getRouter();
         Router destinationRouter = destination.getSubnet().getRouter();
