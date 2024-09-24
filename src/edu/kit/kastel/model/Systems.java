@@ -12,7 +12,7 @@ public class Systems {
     private final Subnet subnet;
 
     /**
-     * This constructor creates a new System object with the given name, IP address and subnet.
+     * Constructs a new System with the specified name, IP address, and subnet.
      * @param name The name of the system.
      * @param ipAddress The IP address of the system.
      * @param subnet The subnet to which the system belongs.

@@ -37,34 +37,54 @@ public class Network {
      * The BGP tables are updated based on the connections between the routers.
      */
     public void updateBGPTables() {
+        resetAllRoutingTables();
+        updateRoutingTablesUntilStable();
+    }
+
+    /**
+     * Resets the routing table of all routers in the network.
+     */
+    private void resetAllRoutingTables() {
         for (Systems system : systemsByIp.values()) {
             if (system instanceof Router) {
                 ((Router) system).resetRoutingTable();
             }
         }
+    }
 
+    /**
+     * Updates the routing tables of all routers until no changes are made.
+     */
+    private void updateRoutingTablesUntilStable() {
         boolean changed;
         do {
             changed = false;
             for (Systems system : systemsByIp.values()) {
                 if (system instanceof Router router) {
-                    Map<String, List<String>> oldTable = new HashMap<>(router.getRoutingTable());
-
-                    for (Connection conn : connections) {
-                        if (conn.getSystem1() == router || conn.getSystem2() == router) {
-                            Systems neighbor = conn.getOtherSystem(router);
-                            if (neighbor instanceof Router) {
-                                router.updateRoutingTable(((Router) neighbor).getRoutingTable());
-                            }
-                        }
-                    }
-
-                    if (!oldTable.equals(router.getRoutingTable())) {
-                        changed = true;
-                    }
+                    changed |= updateSingleRouterTable(router);
                 }
             }
         } while (changed);
+    }
+
+    /**
+     * Updates the routing table of a single router based on its neighbors.
+     * @param router The router whose routing table is to be updated.
+     * @return true if the routing table was changed, false otherwise.
+     */
+    private boolean updateSingleRouterTable(Router router) {
+        Map<String, List<String>> oldTable = new HashMap<>(router.getRoutingTable());
+
+        for (Connection conn : connections) {
+            if (conn.getSystem1() == router || conn.getSystem2() == router) {
+                Systems neighbor = conn.getOtherSystem(router);
+                if (neighbor instanceof Router) {
+                    router.updateRoutingTable(((Router) neighbor).getRoutingTable());
+                }
+            }
+        }
+
+        return !oldTable.equals(router.getRoutingTable());
     }
 
     /**

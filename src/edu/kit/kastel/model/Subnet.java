@@ -85,7 +85,8 @@ public class Subnet {
     }
 
     /**
-     * This method returns the last IP address of the subnet.
+     * Calculates the last IP address in this subnet and returns it.
+     * This method takes into account the network prefix length to determine the last usable IP address in the subnet range.
      * @return the last IP address of the subnet.
      */
     public String getLastIp() {

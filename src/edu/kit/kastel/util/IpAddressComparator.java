@@ -23,7 +23,6 @@ public final class IpAddressComparator {
     /**
      * Compares two IP addresses.
      * This methode is used as a helper method in the ListSystems class.
-     *
      * @param ip1 The first IP address.
      * @param ip2 The second IP address.
      * @return A negative integer, zero, or a positive integer as the first IP address is less than,

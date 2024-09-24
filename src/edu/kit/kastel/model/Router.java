@@ -31,7 +31,8 @@ public class Router extends Systems {
 
     /**
      * Updates the routing table of the router with the new routes.
-     * @param newRoutes The new routes to be added to the routing table.
+     * This method compares the new routes with existing ones and updates the routing table based on path length and next hop IP address.
+     * @param newRoutes A map of subnet CIDRs to their corresponding paths.
      */
     public void updateRoutingTable(Map<String, List<String>> newRoutes) {
         for (Map.Entry<String, List<String>> entry : newRoutes.entrySet()) {
