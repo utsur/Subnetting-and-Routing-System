@@ -75,6 +75,7 @@ public class NetworkLoader {
 
         return network;
     }
+
     // Helper methods to parse the different network parts.
     private Subnet parseSubnet(String line, Network network) {
         String[] parts = line.split(EMPTY_SPACE);
