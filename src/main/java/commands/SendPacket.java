@@ -1,0 +1,75 @@
+package main.java.commands;
+
+import main.java.model.Network;
+import main.java.model.SystemNode;
+import main.java.util.PathFinder;
+
+import java.util.List;
+
+/**
+ * This class represents the send packet command.
+ * It sends a packet from one system to another in the network.
+ * The command finds the shortest path between the systems and returns the path.
+ * If no path is found, an error message is returned.
+ * @author utsur
+ */
+public class SendPacket implements Command {
+    private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'send packet <source_ip> <destination_ip>'";
+    private static final String ERROR_INVALID_IP = "Error, Invalid IP address.";
+    private static final String ERROR_SAME_IP = "Error, Source and destination IP addresses cannot be the same.";
+    private static final String ERROR_NO_PATH = "Error, No path found between the specified systems.";
+    private static final String EMPTY_SPACE = " ";
+    private static final int SECOND_ARG = 2;
+    private static final int THIRD_ARG = 3;
+    private static final int EXPECTED_ARGS = 4;
+    private final Network network;
+    private final PathFinder pathFinder;
+
+    /**
+     * Creates a new send packet command with the given network.
+     * @param network The network to send the packet in.
+     */
+    public SendPacket(Network network) {
+        this.network = network;
+        this.pathFinder = new PathFinder(network);
+    }
+
+    @Override
+    public String execute(String[] args) {
+        if (args.length != EXPECTED_ARGS) {
+            return ERROR_FORMAT;
+        }
+
+        String sourceIp = args[SECOND_ARG];
+        String destinationIp = args[THIRD_ARG];
+        // Check if source and destination IPs are the same.
+        if (sourceIp.equals(destinationIp)) {
+            return ERROR_SAME_IP;
+        }
+
+        SystemNode source = network.getSystemByIp(sourceIp);
+        SystemNode destination = network.getSystemByIp(destinationIp);
+        // Check if source and destination IPs are valid.
+        if (source == null || destination == null) {
+            return ERROR_INVALID_IP;
+        }
+        List<SystemNode> path = pathFinder.findShortestPath(source, destination);
+        // Check if a path was found.
+        if (path == null || path.isEmpty()) {
+            return ERROR_NO_PATH;
+        }
+
+        return formatPath(path);
+    }
+    // This helper method formats the path of systems into a string of IP addresses.
+    private String formatPath(List<SystemNode> path) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < path.size(); i++) {
+            sb.append(path.get(i).getIpAddress());
+            if (i < path.size() - 1) {
+                sb.append(EMPTY_SPACE);
+            }
+        }
+        return sb.toString();
+    }
+}
