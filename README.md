@@ -47,13 +47,15 @@ Load it with `load network example.txt`.
 ## Technical details
 
 The system uses:
-- Dijkstra's algorithm for intra-subnet routing
-- BGP tables for inter-subnet routing
-- Automatic updating of routing tables when the network topology changes
-- Error handling for invalid operations
+- Command Design Pattern for a modular and extensible CLI.
+- Optimized Dijkstra's algorithm for intra-subnet routing ($O(E \log V)$ using `PriorityQueue` and Adjacency Lists).
+- BGP-like path-vector protocol for inter-subnet routing.
+- Automatic updating of routing tables when the network topology changes.
+- Comprehensive Unit Testing using JUnit5.
+- Error handling for invalid operations.
 
 ## Possible improvements and extensions
 
-- Add tests for the various components and functionalities
-- Add support for other routing protocols
-- Add working GUI
+- Add support for more complex routing protocols (OSPF, etc.)
+- Add a simple working GUI
+- Implement multi-threaded BGP convergence simulation
