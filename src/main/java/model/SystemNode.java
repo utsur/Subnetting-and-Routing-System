@@ -1,10 +1,9 @@
-package main.java.model;
+package model;
 
 /**
  * Represents a system in the network.
  * A system has a name, an IP address, and belongs to a subnet.
  * There are computers and routers that have different functions that are specified in their according classes.
- * @author utsur
  */
 public class SystemNode {
     private final String name;

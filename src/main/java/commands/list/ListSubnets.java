@@ -1,9 +1,9 @@
-package main.java.commands.list;
+package commands.list;
 
-import main.java.commands.Command;
-import main.java.model.Network;
-import main.java.model.Subnet;
-import main.java.util.IpAddressComparator;
+import commands.Command;
+import model.Network;
+import model.Subnet;
+import helpers.IpAddressComparator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,6 @@ import java.util.List;
  * This class represents a command to list all subnets in a network.
  * The command takes a network as input and returns a list of all subnets in the network.
  * The subnets are sorted by their CIDR.
- * @author utsur
  */
 public class ListSubnets implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'list subnets'";

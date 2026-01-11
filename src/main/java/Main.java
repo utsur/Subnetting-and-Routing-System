@@ -1,15 +1,14 @@
-package main.java;
 
-import main.java.commands.CommandHandler;
-import main.java.model.Network;
+
+import commands.CommandHandler;
+import model.Network;
 
 import java.util.Scanner;
 
 /**
- * main.java.Main class of the program.
+ * Main class of the program.
  * This class is used to start the program and handle the user input.
  * The program will run until the user types "quit".
- * @author utsur
  */
 public final class Main {
     private static final String QUIT = "quit";
@@ -19,7 +18,7 @@ public final class Main {
     }
 
     /**
-     * main.java.Main method of the program.
+     * Main method of the program.
      * @param args the command line arguments.
      */
     public static void main(String[] args) {

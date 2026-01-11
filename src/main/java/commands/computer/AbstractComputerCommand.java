@@ -1,12 +1,11 @@
-package main.java.commands.computer;
+package commands.computer;
 
-import main.java.commands.Command;
-import main.java.model.Network;
-import main.java.model.Subnet;
+import commands.Command;
+import model.Network;
+import model.Subnet;
 
 /**
  * This abstract class provides shared functionality for computer-related commands.
- * @author utsur
  */
 public abstract class AbstractComputerCommand implements Command {
     protected static final String ERROR_FORMAT = "Error, Invalid command format. Use '%s computer <subnet> <ip>'";

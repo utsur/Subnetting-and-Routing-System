@@ -1,15 +1,11 @@
-package main.java.commands.connection;
+package commands.connection;
 
-import main.java.commands.Command;
-import main.java.model.Connection;
-import main.java.model.Network;
-import main.java.model.Router;
-import main.java.model.SystemNode;
+import commands.Command;
+import model.*;
 
 /**
  * This class represents the add connection command.
  * It adds a connection between two systems in the network.
- * @author utsur
  */
 public class AddConnection implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'add connection <ip1> <ip2> [<weight>]'";

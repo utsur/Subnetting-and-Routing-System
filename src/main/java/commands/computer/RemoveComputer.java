@@ -1,9 +1,6 @@
-package main.java.commands.computer;
+package commands.computer;
 
-import main.java.model.Computer;
-import main.java.model.Network;
-import main.java.model.Subnet;
-import main.java.model.SystemNode;
+import model.*;
 
 /**
  * This class represents the command to remove a computer from the network.
@@ -11,7 +8,6 @@ import main.java.model.SystemNode;
  * If the IP address does not belong to a computer, an error message is returned.
  * If the subnet or IP address is invalid, an error message is returned.
  * If the command format is invalid, an error message is returned.
- * @author utsur
  */
 public class RemoveComputer extends AbstractComputerCommand {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'remove computer <subnet> <ip>'";

@@ -1,13 +1,10 @@
-package main.java.commands;
+package commands;
 
-import main.java.commands.computer.AddComputer;
-import main.java.commands.computer.RemoveComputer;
-import main.java.commands.connection.AddConnection;
-import main.java.commands.connection.RemoveConnection;
-import main.java.commands.list.ListRange;
-import main.java.commands.list.ListSubnets;
-import main.java.commands.list.ListSystems;
-import main.java.model.Network;
+
+import commands.computer.*;
+import commands.connection.*;
+import commands.list.*;
+import model.Network;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,8 +12,7 @@ import java.util.Map;
 /**
  * This class is responsible for handling commands and executing them.
  * This class acts as a central point for processing all user commands,
- * mapping them to their respective Command objects and executing them.
- * @author utsur
+ * mapping them to their respective Command objects, and executing them.
  */
 public class CommandHandler {
     private static final String ERROR_MESSAGE_UNKNOWN = "Error, Unknown command.";
@@ -62,7 +58,10 @@ public class CommandHandler {
      * @return The output of the command execution, or an error message if the command is not valid.
      */
     public String handleCommand(String input) {
-        String[] parts = input.split(WHITESPACE_REGEX);
+        if (input == null || input.isBlank()) {
+            return EMPTY_STRING;
+        }
+        String[] parts = input.trim().split(WHITESPACE_REGEX);
         String mainCommand = parts[0].toLowerCase();
         String subCommand = parts.length > 1 ? parts[1].toLowerCase() : EMPTY_STRING;
 

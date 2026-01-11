@@ -1,13 +1,12 @@
-package main.java.commands.list;
+package commands.list;
 
-import main.java.commands.Command;
-import main.java.model.Network;
-import main.java.model.Subnet;
+import commands.Command;
+import model.Network;
+import model.Subnet;
 
 /**
  * This class represents a command to list the range of a subnet.
  * The command takes a network and a subnet as input and returns the first and last IP address of the subnet.
- * @author utsur
  */
 public class ListRange implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'list range <subnet>'";

@@ -1,11 +1,10 @@
-package main.java.model;
+package model;
 
 /**
  * Represents a connection between two systems in the network.
  * A connection has a weight that represents the cost of the connection.
  * The weight is used to calculate the shortest path between two systems.
  * Connections between routers are not weighted.
- * @author utsur
  */
 public class Connection {
     private final SystemNode system1;

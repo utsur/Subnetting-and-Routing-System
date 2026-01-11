@@ -1,9 +1,8 @@
-package main.java.util;
+package helpers;
 
 /**
  * This class provides a method to compare IP addresses and CIDRs.
  * It is used to sort IP addresses and CIDRs in ascending order.
- * @author utsur
  */
 public final class IpAddressComparator {
     private static final String DOT = ".";

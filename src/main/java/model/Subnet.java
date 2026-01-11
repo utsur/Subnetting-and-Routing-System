@@ -1,4 +1,4 @@
-package main.java.model;
+package model;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -8,7 +8,6 @@ import java.util.Set;
  * A subnet consists of Computers and a router.
  * Computers can only connect to systems in the same subnet.
  * Systems in different subnets can only connect via routers.
- * @author utsur
  */
 public class Subnet {
     private static final int BITS_IN_BYTE = 8;

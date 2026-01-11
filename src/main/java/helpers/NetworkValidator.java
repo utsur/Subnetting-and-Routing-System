@@ -1,15 +1,14 @@
-package main.java.util;
+package helpers;
 
-import main.java.model.Router;
-import main.java.model.Subnet;
-import main.java.model.SystemNode;
+import model.Router;
+import model.Subnet;
+import model.SystemNode;
 
 /**
  * This class is responsible for validating the network.
  * It checks if the IP, subnet, and connection are valid.
  * It also checks if the subnets are overlapping.
  * It is used by the NetworkLoader class to validate the network before creating it.
- * @author utsur
  */
 public final class NetworkValidator {
     private static final String ERROR_UNWEIGHTED_CONNECTION = "Error, Connection inside subnet must be weighted: ";

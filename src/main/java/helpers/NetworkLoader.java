@@ -1,18 +1,12 @@
-package main.java.util;
+package helpers;
 
-import main.java.model.Computer;
-import main.java.model.Connection;
-import main.java.model.Network;
-import main.java.model.Router;
-import main.java.model.Subnet;
-import main.java.model.SystemNode;
+import model.*;
 
 import java.util.List;
 
 /**
  * This class is responsible for loading a network from a text file.
  * It creates the network, subnets, systems, and connections.
- * @author utsur
  */
 public class NetworkLoader {
     private static final String ERROR_PARSE_SUBNET = "Error, parsing subnet: ";

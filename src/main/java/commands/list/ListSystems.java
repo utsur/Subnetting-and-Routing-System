@@ -1,11 +1,8 @@
-package main.java.commands.list;
+package commands.list;
 
-import main.java.commands.Command;
-import main.java.model.Network;
-import main.java.model.Router;
-import main.java.model.Subnet;
-import main.java.model.SystemNode;
-import main.java.util.IpAddressComparator;
+import commands.Command;
+import model.*;
+import helpers.IpAddressComparator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +10,6 @@ import java.util.List;
 /**
  * This class represents a command to list all systems in a subnet.
  * The command takes a network and a subnet as input and returns a list of all systems in the subnet.
- * @author utsur
  */
 public class ListSystems implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'list systems <subnet>'";

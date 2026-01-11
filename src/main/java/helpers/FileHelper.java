@@ -1,4 +1,4 @@
-package main.java.util;
+package helpers;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,7 +8,6 @@ import java.util.List;
 
 /**
  * A helper class wrapping {@link Files#readAllLines(Path)} for convenient usage.
- * @author Programmieren-Team
  */
 public final class FileHelper {
     private static final String ERROR_INVALID_PATH = "Error, an invalid path has been passed.";

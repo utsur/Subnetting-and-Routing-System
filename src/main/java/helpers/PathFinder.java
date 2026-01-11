@@ -1,21 +1,18 @@
-package main.java.util;
+package helpers;
 
-import main.java.model.Connection;
-import main.java.model.Network;
-import main.java.model.Router;
-import main.java.model.Subnet;
-import main.java.model.SystemNode;
+import model.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 /**
  * A helper class for finding paths in a network.
  * This class uses the Dijkstra algorithm for intra-subnet routing and BGP tables for inter-subnet routing.
- * @author utsur
  */
 public class PathFinder {
     private static final int INITIAL_DISTANCE = 0;
@@ -49,31 +46,34 @@ public class PathFinder {
     private List<SystemNode> findPathInSubnet(SystemNode source, SystemNode destination) {
         Map<SystemNode, Integer> distances = new HashMap<>();
         Map<SystemNode, SystemNode> previousSystems = new HashMap<>();
-        List<SystemNode> unvisitedSystems = new ArrayList<>(source.getSubnet().getSystems());
+        PriorityQueue<SystemNode> pq = new PriorityQueue<>(Comparator.comparingInt(distances::get));
 
-        for (SystemNode system : unvisitedSystems) {
+        for (SystemNode system : source.getSubnet().getSystems()) {
             distances.put(system, MAX_DISTANCE);
         }
         distances.put(source, INITIAL_DISTANCE);
+        pq.add(source);
 
-        while (!unvisitedSystems.isEmpty()) {
-            SystemNode current = getMinDistanceSystem(unvisitedSystems, distances);
-            if (current == null) {
-                break; // No path found.
-            }
-            unvisitedSystems.remove(current);
+        while (!pq.isEmpty()) {
+            SystemNode current = pq.poll();
+
             // Stop if the destination system is reached.
             if (current.equals(destination)) {
                 return reconstructPath(previousSystems, destination);
             }
+
             // Update the distances to the neighbors of the current system.
-            for (Connection connection : getConnections(current)) {
+            for (Connection connection : network.getConnections(current)) {
                 SystemNode neighbor = connection.getOtherSystem(current);
-                if (neighbor.getSubnet().equals(source.getSubnet())) {
+                // Updates neighbor distances if a shorter path found
+                if (neighbor != null && neighbor.getSubnet().equals(source.getSubnet())) {
                     int alternativeDistance = distances.get(current) + connection.getWeight();
                     if (alternativeDistance < distances.get(neighbor)) {
                         distances.put(neighbor, alternativeDistance);
                         previousSystems.put(neighbor, current);
+                        // PriorityQueue doesn't support an efficient decrease-key, so we re-add the node. (Lazy Approach)
+                        // The poll() will take the one with the smallest distance first.
+                        pq.add(neighbor);
                     }
                 }
             }
@@ -121,32 +121,6 @@ public class PathFinder {
         }
         String nextRouterIp = routerPath.get(1); // Get the next hop.
         return (Router) network.getSystemByIp(nextRouterIp);
-    }
-
-    private SystemNode getMinDistanceSystem(List<SystemNode> systems, Map<SystemNode, Integer> distances) {
-        SystemNode minSystem = null;
-        int minDistance = MAX_DISTANCE;
-        // Find the system with the smallest distance.
-        for (SystemNode system : systems) {
-            int distance = distances.get(system);
-            if (distance < minDistance) {
-                minDistance = distance;
-                minSystem = system;
-            }
-        }
-        // If no system is found, minSystem will be null.
-        return minSystem;
-    }
-
-    private List<Connection> getConnections(SystemNode system) {
-        List<Connection> connections = new ArrayList<>();
-        for (Connection connection : network.getConnections()) {
-            if (connection.getSystem1().equals(system) || connection.getSystem2().equals(system)) {
-                connections.add(connection);
-            }
-        }
-        // Return an empty list if no connections are found.
-        return connections;
     }
 
     private List<SystemNode> reconstructPath(Map<SystemNode, SystemNode> previousSystems, SystemNode destination) {

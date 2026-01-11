@@ -1,4 +1,4 @@
-package main.java.model;
+package model;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +8,6 @@ import java.util.Map;
 
 /**
  * Represents a router in the network.
- * @author utsur
  */
 public class Router extends SystemNode {
     private final Map<String, List<String>> routingTable;

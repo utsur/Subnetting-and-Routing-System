@@ -1,6 +1,7 @@
-package main.java.model;
+package model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,7 +12,6 @@ import java.util.Set;
  * Represents a network of subnets and systems.
  * A network consists of subnets, systems, and connections between systems.
  * The components of the network are specified in their respective classes.
- * @author utsur
  */
 public class Network {
     private static final String ERROR_INVALID_CONNECTION = "Error, Invalid connection.";
@@ -19,6 +19,7 @@ public class Network {
     private final Map<String, SystemNode> systemsByIp;
     private final Map<String, SystemNode> systemsByName;
     private final Set<Connection> connections;
+    private final Map<SystemNode, List<Connection>> adjacencyList;
 
     /**
      * Creates a new empty network.
@@ -29,6 +30,7 @@ public class Network {
         this.systemsByIp = new HashMap<>();
         this.systemsByName = new HashMap<>();
         this.connections = new HashSet<>();
+        this.adjacencyList = new HashMap<>();
     }
 
     /**
@@ -74,12 +76,10 @@ public class Network {
     private boolean updateSingleRouterTable(Router router) {
         Map<String, List<String>> oldTable = new HashMap<>(router.getRoutingTable());
         // Update the routing table based on the connections of the router.
-        for (Connection conn : connections) {
-            if (conn.getSystem1() == router || conn.getSystem2() == router) {
-                SystemNode neighbor = conn.getOtherSystem(router);
-                if (neighbor instanceof Router) {
-                    router.updateRoutingTable(((Router) neighbor).getRoutingTable());
-                }
+        for (Connection conn : getConnections(router)) {
+            SystemNode neighbor = conn.getOtherSystem(router);
+            if (neighbor instanceof Router) {
+                router.updateRoutingTable(((Router) neighbor).getRoutingTable());
             }
         }
         // Return true if the routing table was changed.
@@ -143,6 +143,11 @@ public class Network {
         systemsByIp.remove(system.getIpAddress());
         systemsByName.remove(system.getName());
         connections.removeIf(conn -> conn.getSystem1() == system || conn.getSystem2() == system);
+        adjacencyList.remove(system);
+        // Removes connections to a system from other systems
+        for (List<Connection> systemConnections : adjacencyList.values()) {
+            systemConnections.removeIf(conn -> conn.getSystem1() == system || conn.getSystem2() == system);
+        }
     }
 
     /**
@@ -151,6 +156,8 @@ public class Network {
      */
     public void addConnection(Connection connection) {
         connections.add(connection);
+        adjacencyList.computeIfAbsent(connection.getSystem1(), k -> new ArrayList<>()).add(connection);
+        adjacencyList.computeIfAbsent(connection.getSystem2(), k -> new ArrayList<>()).add(connection);
         updateBGPTables();
     }
 
@@ -180,11 +187,24 @@ public class Network {
             (conn.getSystem1() == system1 && conn.getSystem2() == system2)
                 || (conn.getSystem1() == system2 && conn.getSystem2() == system1)
         );
-        if (!removed) {
+        if (removed) {
+            adjacencyList.getOrDefault(system1, new ArrayList<>())
+                .removeIf(conn -> conn.getOtherSystem(system1).equals(system2));
+            adjacencyList.getOrDefault(system2, new ArrayList<>())
+                .removeIf(conn -> conn.getOtherSystem(system2).equals(system1));
+            updateBGPTables();
+        } else {
             System.out.println(ERROR_INVALID_CONNECTION);
-            return;
         }
-        updateBGPTables();
+    }
+
+    /**
+     * Returns the connections of a given system.
+     * @param system The system to get connections for.
+     * @return A list of connections for the given system.
+     */
+    public List<Connection> getConnections(SystemNode system) {
+        return adjacencyList.getOrDefault(system, Collections.emptyList());
     }
 
     /**

@@ -1,8 +1,8 @@
-package main.java.commands;
+package commands;
 
-import main.java.model.Network;
-import main.java.model.SystemNode;
-import main.java.util.PathFinder;
+import model.Network;
+import model.SystemNode;
+import helpers.PathFinder;
 
 import java.util.List;
 
@@ -11,7 +11,6 @@ import java.util.List;
  * It sends a packet from one system to another in the network.
  * The command finds the shortest path between the systems and returns the path.
  * If no path is found, an error message is returned.
- * @author utsur
  */
 public class SendPacket implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'send packet <source_ip> <destination_ip>'";

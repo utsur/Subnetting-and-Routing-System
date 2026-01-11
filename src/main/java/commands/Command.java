@@ -1,10 +1,9 @@
-package main.java.commands;
+package commands;
 
 /**
  * Interface for commands that can be executed by the {@link CommandHandler}.
  * This interface defines the contract for all commands that can be executed by the CommandHandler.
  * Each command must implement this interface to be executed by the CommandHandler.
- * @author utsur
  */
 public interface Command {
 

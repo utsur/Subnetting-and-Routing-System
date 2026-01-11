@@ -1,13 +1,12 @@
-package main.java.commands.computer;
+package commands.computer;
 
-import main.java.model.Computer;
-import main.java.model.Network;
-import main.java.model.Subnet;
+import model.Computer;
+import model.Network;
+import model.Subnet;
 
 /**
  * This class represents the command to add a computer to the network.
  * The computer is added to the specified subnet with the given IP address.
- * @author utsur
  */
 public class AddComputer extends AbstractComputerCommand {
     private static final String ERROR_IP_EXISTS = "Error, IP address already exists in the network.";

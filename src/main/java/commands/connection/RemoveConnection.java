@@ -1,13 +1,12 @@
-package main.java.commands.connection;
+package commands.connection;
 
-import main.java.commands.Command;
-import main.java.model.Network;
-import main.java.model.SystemNode;
+import commands.Command;
+import model.Network;
+import model.SystemNode;
 
 /**
  * This class represents the remove connection command.
  * It removes a connection between two systems in the network.
- * @author utsur
  */
 public class RemoveConnection implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'remove connection <ip1> <ip2>'";

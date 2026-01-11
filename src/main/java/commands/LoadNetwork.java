@@ -1,15 +1,14 @@
-package main.java.commands;
+package commands;
 
-import main.java.model.Network;
-import main.java.util.FileHelper;
-import main.java.util.NetworkLoader;
+import model.Network;
+import helpers.FileHelper;
+import helpers.NetworkLoader;
 
 import java.util.List;
 
 /**
  * Command to load a network from a file.
  * This class handles the parsing of the load command, reading the file, and updating the network with the loaded configuration.
- * @author utsur
  */
 public class LoadNetwork implements Command {
     private static final String ERROR_FORMAT = "Error, Invalid command format. Use 'load network <path>'";
